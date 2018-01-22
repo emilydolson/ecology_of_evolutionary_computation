@@ -1,6 +1,6 @@
 # Project-specific settings
 PROJECT := evo_comp_ecology
-EMP_DIR := ../../Empirical/source
+EMP_DIR := ../Empirical/source
 
 # Flags to use regardless of compiler
 CFLAGS_all := -Wall -Wno-unused-function -std=c++14 -I$(EMP_DIR)/
