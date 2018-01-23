@@ -82,6 +82,7 @@ public:
     emp::DataNode<size_t, emp::data::Range> always_used;
 
     EcologyWorld(std::string filename) : testcases(filename) {
+
         for (size_t i = 0; i < testcases.GetTestcases().size(); i++) {
             full_set.insert(i);
         }
@@ -206,7 +207,7 @@ public:
         InitConfigs();
 
         resources.resize(0);
-        for (int i=0; i<GENOME_SIZE; i++) {
+        for (size_t i=0; i<testcases.GetTestcases().size(); i++) {
             resources.push_back(emp::Resource(RESOURCE_INFLOW, RESOURCE_INFLOW, .01));
         }
 
@@ -266,6 +267,18 @@ public:
             emp::LexicaseSelect(*this, fit_set, POP_SIZE-1);
         } else if (SELECTION == "RESOURCE") {
             emp::ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST, false);
+            for (emp::Ptr<ORG_TYPE> org : pop) {
+                if (per_genotype_data[org->GetGenome()].always_used.size() == 0) {
+                    std::set<size_t> niches;
+                    for (size_t i = 0; i < per_genotype_data[org->GetGenome()].error_vec.size(); i++) {
+                        if (per_genotype_data[org->GetGenome()].error_vec[i] > 0) {
+                            niches.insert(i);
+                        }
+                    }
+                    per_genotype_data[org->GetGenome()].always_used = niches;
+                }
+                niche_width.Add(per_genotype_data[org->GetGenome()].always_used.size());
+            }
         } else if (SELECTION == "ROULETTE") {
             RouletteSelect(*this, POP_SIZE-1);
         } else {
