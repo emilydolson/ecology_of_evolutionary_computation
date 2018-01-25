@@ -25,6 +25,9 @@ public:
         LoadTestcases(filename);
     }
 
+    TestcaseSet() {}
+
+
     emp::vector<std::pair<input_t, output_t> >& GetTestcases() {
         return test_cases;
     }
@@ -41,6 +44,9 @@ public:
             std::cout << "ERROR: " << filename << " did not open correctly" << std::endl;
             return;
         }
+
+        // Ignore header
+        getline(infile, line);
 
         while ( getline (infile,line)) {
             emp::vector<std::string> split_line = emp::slice(line, ',');
