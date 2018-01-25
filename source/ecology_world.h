@@ -343,7 +343,7 @@ public:
         Update();
         
         if (update % 100 == 0) {
-            PrintDetail("detail-" + to_string(update) +".spop");
+            PrintDetail("detail-" + emp::to_string(update) +".spop");
         }
 
         // if (isinf(GetFitnessDataNode().GetMax())){
