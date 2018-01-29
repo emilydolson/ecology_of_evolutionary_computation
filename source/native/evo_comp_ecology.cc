@@ -9,11 +9,24 @@
 
 int main(int argc, char* argv[])
 {
-  EcologyWorld world;
+  
+  BoxConfig config;
   auto args = emp::cl::ArgManager(argc, argv);
-  if (args.ProcessConfigOptions(world.config, std::cout, "BoxConfig.cfg", "Box-macros.h") == false) exit(0);
+  if (args.ProcessConfigOptions(config, std::cout, "BoxConfig.cfg", "Box-macros.h") == false) exit(0);
   if (args.TestUnknown() == false) exit(0);  // If there are leftover args, throw an error.
 
-  world.Setup();
-  world.Run();
+  emp::Random rnd(config.SEED());
+
+  if (config.PROBLEM() == "box") {
+    using ORG_TYPE = emp::vector<double>;
+    EcologyWorld<ORG_TYPE> world(rnd);
+    world.Setup(config);
+    world.Run();
+  } else {
+    using ORG_TYPE = emp::AvidaGP;
+    EcologyWorld<ORG_TYPE> world(rnd);
+    world.Setup(config);
+    world.Run();
+  }
+
 }

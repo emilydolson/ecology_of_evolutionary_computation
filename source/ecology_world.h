@@ -14,7 +14,7 @@
 
 EMP_BUILD_CONFIG( BoxConfig,
   GROUP(DEFAULT, "Default settings for box experiment"),
-  VALUE(SEED, int, 0, "Random number seed (0 for based on time)"),
+  VALUE(SEED, int, 55711224, "Random number seed (0 for based on time)"),
   VALUE(POP_SIZE, uint32_t, 1000, "Number of organisms in the popoulation."),
   VALUE(START_POP_SIZE, uint32_t, 1, "Number of organisms to initialize population with."),
   VALUE(UPDATES, uint32_t, 1000, "How many generations should we process?"),
@@ -29,7 +29,7 @@ EMP_BUILD_CONFIG( BoxConfig,
   VALUE(PROBLEM, std::string, "testcases/count-odds.csv", "Which set of testcases should we use? (or enter 'box' for the box problem"),
 //   VALUE(RECOMBINATION, int, 0, "Does recombination happen?"),
   VALUE(TOURNAMENT_SIZE, int, 5, "Tournament size"),
-  VALUE(N_TEST_CASES, int, 200, "How many test cases to use"),  
+  VALUE(N_TEST_CASES, uint32_t, 200, "How many test cases to use"),  
   VALUE(COST, double, 0, "Cost of doing task unsuccessfully"),
   VALUE(FRAC, double, .0025, "Percent of resource individual can use"),
   VALUE(GENOME_SIZE, int, 200, "Length of genome"),
@@ -44,14 +44,39 @@ struct genome_info {
 
 };
 
-using ORG_TYPE = emp::AvidaGP;
-
-class EcologyWorld  : public emp::World<ORG_TYPE>{
+template <typename ORG_TYPE>
+class EcologyWorld : public emp::World<ORG_TYPE>{
 public:
 
-    BoxConfig config;
+    using typename emp::World<ORG_TYPE>::genotype_t;
+    using typename emp::World<ORG_TYPE>::genome_t;
+    using typename emp::World<ORG_TYPE>::fun_calc_fitness_t;
+    using emp::World<ORG_TYPE>::random_ptr; 
+    using emp::World<ORG_TYPE>::GetRandom;
+    using emp::World<ORG_TYPE>::SetMutFun;
+    using emp::World<ORG_TYPE>::OnInjectReady;
+    using emp::World<ORG_TYPE>::OnOffspringReady;
+    using emp::World<ORG_TYPE>::update;
+    using emp::World<ORG_TYPE>::Update;
+    using emp::World<ORG_TYPE>::pop;
+    using emp::World<ORG_TYPE>::systematics;
+    using emp::World<ORG_TYPE>::SetupFile;
+    using emp::World<ORG_TYPE>::SetupFitnessFile;
+    using emp::World<ORG_TYPE>::SetupSystematicsFile;
+    using emp::World<ORG_TYPE>::SetupPopulationFile;
+    using emp::World<ORG_TYPE>::GetFitnessDataNode;    
+    using emp::World<ORG_TYPE>::SetWellMixed;
+    using emp::World<ORG_TYPE>::Inject;    
+    using emp::World<ORG_TYPE>::GetGenomeAt;    
+    using emp::World<ORG_TYPE>::GetGenome;    
+    
     uint32_t POP_SIZE;
     uint32_t START_POP_SIZE;
+    int N_NEUTRAL;
+    int N_GOOD;
+    int N_BAD;
+    int PROBLEM_DIMENSIONS;
+    double DISTANCE_CUTOFF;
     uint32_t UPDATES;
     double RESOURCE_INFLOW;
     double MUT_RATE;
@@ -66,12 +91,13 @@ public:
     std::set<size_t> full_set;
     int failed = 0;
     std::string PROBLEM;
-    int N_TEST_CASES;
+    uint32_t N_TEST_CASES;
 
     bool do_mutate = true;
 
-    std::map<ORG_TYPE::genome_t, genome_info> per_genotype_data;
+    std::map<genome_t, genome_info> per_genotype_data;
 
+    bool destructed = false;
 
     emp::vector<emp::Resource> resources;
     emp::vector<fun_calc_fitness_t> fit_set;
@@ -97,66 +123,20 @@ public:
     emp::DataNode<size_t, emp::data::Range> evolutionary_distinctiveness;
 
     EcologyWorld() {}
-
-    void SetupFitnessFunctions() {
-
-        fit_set.resize(0);
-
-        int count = 0;
-        for (auto testcase : testcases.GetTestcases()) {
-            fit_set.push_back([testcase, count, this](ORG_TYPE & org){
-
-                if (emp::Has(per_genotype_data, org.GetGenome()) && (int)per_genotype_data[org.GetGenome()].error_vec.size() > count) {
-                    return per_genotype_data[org.GetGenome()].error_vec[count];
-                }
-
-                org.ResetHardware();
-                for (size_t i = 0; i < testcase.first.size(); i++) {
-                    org.SetInput(i, testcase.first[i]);
-                }
-
-                org.Process(200);
-                int divisor = testcase.second;
-                if (divisor == 0) {
-                    divisor = 1;
-                }   
-                double result = 1 - (std::abs(org.GetOutput(0) - testcase.second)/divisor);
-                per_genotype_data[org.GetGenome()].error_vec.push_back(result);
-                return result;
-            });
-
-            count++;
-            if (count >= N_TEST_CASES) {
-                break;
-            }
-        }
+    EcologyWorld(emp::Random & rnd) : emp::World<ORG_TYPE>(rnd) {}
+    ~EcologyWorld() {destructed = true;};
 
 
-        std::function<double(const ORG_TYPE&)> goal_function = [this](const ORG_TYPE & org){
 
-            double total = 0;
-            for (double val : per_genotype_data[org.GetGenome()].error_vec) {
-                total += val;
-            }
-
-            return total;
-        };
-
-        SetFitFun(goal_function);
-
-        // if (SELECTION == "LEXICASE") {
-        //     fit_set.push_back(goal_function);
-        // } else if (SELECTION == "TOURNAMENT") {
-        //     SetCache(true);
-        // }
-
-    }
-
-
-    void InitConfigs() {
+    void InitConfigs(BoxConfig & config) {
         POP_SIZE = config.POP_SIZE();
         START_POP_SIZE = config.START_POP_SIZE();        
         UPDATES = config.UPDATES();
+        N_NEUTRAL = config.N_NEUTRAL();
+        N_GOOD = config.N_GOOD();
+        N_BAD = config.N_BAD();
+        PROBLEM_DIMENSIONS = config.PROBLEM_DIMENSIONS();
+        DISTANCE_CUTOFF = config.DISTANCE_CUTOFF();        
         RESOURCE_INFLOW = config.RESOURCE_INFLOW();
         MUT_RATE = config.MUT_RATE();
         SELECTION = config.SELECTION();
@@ -168,25 +148,21 @@ public:
         PROBLEM = config.PROBLEM();
         N_TEST_CASES = config.N_TEST_CASES();        
     }
+    void InitPop();
 
-    void InitPop() {
-        emp::Random & random = GetRandom();
-        for (size_t i = 0; i < START_POP_SIZE; i++) {
-            ORG_TYPE cpu;
-            cpu.PushRandom(random, GENOME_SIZE);
-            Inject(cpu.GetGenome());
-        }
-    }
+    void SetupFitnessFunctions();
 
-    void Setup() {
+    void SetupMutationFunctions();
+
+    void Setup(BoxConfig & config) {
 
         SetWellMixed(true);
 
-        InitConfigs();
+        InitConfigs(config);
 
-        testcases.LoadTestcases(PROBLEM);
+        SetupFitnessFunctions();
 
-        for (size_t i = 0; i < testcases.GetTestcases().size(); i++) {
+        for (size_t i = 0; i < N_TEST_CASES; i++) {
             full_set.insert(i);
         }
 
@@ -195,66 +171,57 @@ public:
             // std::cout << vec.size() << std::endl;
             niche_width.Add(vec.size());
             // std::cout << niche_width.GetMean() << std::endl;
-            per_genotype_data[pop[repro_id]->GetGenome()].sometimes_used.insert(vec.begin(), vec.end());
-            per_genotype_data[pop[repro_id]->GetGenome()].always_used = emp::intersection(per_genotype_data[pop[repro_id]->GetGenome()].always_used, vec);
-            per_genotype_data[pop[repro_id]->GetGenome()].selected = true;
+            per_genotype_data[GetGenomeAt(repro_id)].sometimes_used.insert(vec.begin(), vec.end());
+            per_genotype_data[GetGenomeAt(repro_id)].always_used = emp::intersection(per_genotype_data[GetGenomeAt(repro_id)].always_used, vec);
+            per_genotype_data[GetGenomeAt(repro_id)].selected = true;
         });
 
-        OnOffspringReady([this](ORG_TYPE & org) {
-            if (!do_mutate) {
-                return;
-            }
-            uint32_t num_muts = random_ptr->GetUInt(MUT_RATE*org.GetGenome().sequence.size());  // 0 to 3 mutations.
-            for (uint32_t m = 0; m < num_muts; m++) {
-                const uint32_t pos = random_ptr->GetUInt(GENOME_SIZE);
-                org.RandomizeInst(pos, *random_ptr);
-            }
-            return;
-        });
-
-        OnOffspringReady([this](ORG_TYPE & org){
-            if (!emp::Has(per_genotype_data, org.GetGenome())) {
-                per_genotype_data[org.GetGenome()] = genome_info();
-                if (SELECTION == "LEXICASE") {
-                    per_genotype_data[org.GetGenome()].always_used = full_set;
-                }
-            }
-        });
-
-        OnInjectReady([this](ORG_TYPE & org){
-            if (!emp::Has(per_genotype_data, org.GetGenome())) {
-                per_genotype_data[org.GetGenome()] = genome_info();
-                if (SELECTION == "LEXICASE") {
-                    per_genotype_data[org.GetGenome()].always_used = full_set;
-                }
-            }
-        });        
+        SetupMutationFunctions();
 
         resources.resize(0);
-        for (size_t i=0; i<testcases.GetTestcases().size(); i++) {
+        for (size_t i=0; i<N_TEST_CASES; i++) {
             resources.push_back(emp::Resource(RESOURCE_INFLOW, RESOURCE_INFLOW, .01));
         }
 
-        systematics.OnPrune([this](emp::Ptr<genotype_t> org){
-            per_genotype_data.erase(org->GetInfo());
+        systematics.OnNew([this](emp::Ptr<genotype_t> org){
+            if (!emp::Has(per_genotype_data, org->GetInfo())){
+
+                per_genotype_data[org->GetInfo()] = genome_info();
+                ORG_TYPE cpu = org->GetInfo();
+                for (auto fit_fun : fit_set) {
+                    per_genotype_data[org->GetInfo()].error_vec.push_back(fit_fun(cpu));
+                }
+
+                if (SELECTION == "LEXICASE") {
+                    per_genotype_data[org->GetInfo()].always_used = full_set;
+                }
+            }
+
         });
+
+        systematics.OnPrune([this](emp::Ptr<genotype_t> org){
+            
+            if (!destructed && emp::Has(per_genotype_data, org->GetInfo())) {
+                per_genotype_data.erase(org->GetInfo());
+            }
+
+        });
+
 
         InitPop();
 
-        // Setup the mutation function.
-        SetMutFun( [this](ORG_TYPE & org, emp::Random & random) {
-            if (!do_mutate) {
-                return (uint32_t)0;
-            }
-            uint32_t num_muts = random.GetUInt(4);  // 0 to 3 mutations.
-            for (uint32_t m = 0; m < num_muts; m++) {
-                const uint32_t pos = random.GetUInt(GENOME_SIZE);
-                org.RandomizeInst(pos, random);
-            }
-            return num_muts;
-        } );
-
-        SetupFitnessFunctions();
+        // // Setup the mutation function.
+        // SetMutFun( [this](ORG_TYPE & org, emp::Random & random) {
+        //     if (!do_mutate) {
+        //         return (uint32_t)0;
+        //     }
+        //     uint32_t num_muts = random.GetUInt(4);  // 0 to 3 mutations.
+        //     for (uint32_t m = 0; m < num_muts; m++) {
+        //         const uint32_t pos = random.GetUInt(GENOME_SIZE);
+        //         org.RandomizeInst(pos, random);
+        //     }
+        //     return num_muts;
+        // } );
 
         SetupFitnessFile().SetTimingRepeat(10);
         SetupSystematicsFile().SetTimingRepeat(10);
@@ -298,23 +265,23 @@ public:
         EliteSelect(*this);
         do_mutate = true;
 
-        if (SELECTION == "TOURNAMENT") {
+        if (SELECTION == "TOURNAMENT" || SELECTION == "SHARING") {
             TournamentSelect(*this, TOURNAMENT_SIZE, POP_SIZE-1);
         } else if (SELECTION == "LEXICASE") {
             emp::LexicaseSelect(*this, fit_set, POP_SIZE-1);
         } else if (SELECTION == "RESOURCE") {
             emp::ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST, false);
             for (emp::Ptr<ORG_TYPE> org : pop) {
-                if (per_genotype_data[org->GetGenome()].always_used.size() == 0) {
+                if (per_genotype_data[GetGenome(*org)].always_used.size() == 0) {
                     std::set<size_t> niches;
-                    for (size_t i = 0; i < per_genotype_data[org->GetGenome()].error_vec.size(); i++) {
-                        if (per_genotype_data[org->GetGenome()].error_vec[i] > 0) {
+                    for (size_t i = 0; i < per_genotype_data[GetGenome(*org)].error_vec.size(); i++) {
+                        if (per_genotype_data[GetGenome(*org)].error_vec[i] > 0) {
                             niches.insert(i);
                         }
                     }
-                    per_genotype_data[org->GetGenome()].always_used = niches;
+                    per_genotype_data[GetGenome(*org)].always_used = niches;
                 }
-                niche_width.Add(per_genotype_data[org->GetGenome()].always_used.size());
+                niche_width.Add(per_genotype_data[GetGenome(*org)].always_used.size());
             }
         } else if (SELECTION == "ROULETTE") {
             RouletteSelect(*this, POP_SIZE-1);
@@ -325,12 +292,12 @@ public:
         
         failed = 0;
         for (emp::Ptr<ORG_TYPE> org : pop) {
-            if (!per_genotype_data[org->GetGenome()].selected) {
+            if (!per_genotype_data[GetGenome(*org)].selected) {
                 failed++;
                 continue;
             }
-            always_used.Add(per_genotype_data[org->GetGenome()].always_used.size());
-            sometimes_used.Add(per_genotype_data[org->GetGenome()].sometimes_used.size());
+            always_used.Add(per_genotype_data[GetGenome(*org)].always_used.size());
+            sometimes_used.Add(per_genotype_data[GetGenome(*org)].sometimes_used.size());
         }
 
         for (auto tax : systematics.GetActive() ) {
@@ -340,11 +307,13 @@ public:
         
         std::cout << "UD: " << update << " | Best: " << GetFitnessDataNode().GetMax() << std::endl;
 
-        Update();
-        
         if (update % 100 == 0) {
             PrintDetail("detail-" + emp::to_string(update) +".spop");
         }
+
+        Update();
+        
+
 
         // if (isinf(GetFitnessDataNode().GetMax())){
         //     return;
@@ -374,7 +343,7 @@ public:
         }
 
         for (const auto & x : systematics.GetActive()) {
-            int parent_id;
+            int parent_id = 0;
             if (x->GetParent()) {
                 parent_id = x->GetParent();
             }
@@ -387,7 +356,7 @@ public:
 
 
         for (const auto & x : systematics.GetAncestors()) {
-            int parent_id;
+            int parent_id = 0;
             if (x->GetParent()) {
                 parent_id = x->GetParent();
             }
@@ -401,3 +370,267 @@ public:
 
     }
 };
+
+
+
+template <typename ORG_TYPE> 
+void EcologyWorld<ORG_TYPE>::SetupMutationFunctions() {
+    /* This is an org_type that we don't have any fitness functions for*/
+    std::cout << "Unsporrted org type." << std::endl;
+    exit(1);
+}
+
+
+template <> 
+void EcologyWorld<emp::AvidaGP>::SetupMutationFunctions() {
+
+    OnOffspringReady([this](emp::AvidaGP & org) {
+        if (do_mutate) {
+            
+            uint32_t num_muts = random_ptr->GetUInt(MUT_RATE*GetGenome(org).sequence.size());  // 0 to 3 mutations.
+            for (uint32_t m = 0; m < num_muts; m++) {
+                const uint32_t pos = random_ptr->GetUInt(GENOME_SIZE);
+                org.RandomizeInst(pos, *random_ptr);
+            }
+        }
+
+    });
+}
+
+
+template <> 
+void EcologyWorld<emp::vector<double> >::SetupMutationFunctions() {
+
+    OnOffspringReady([this](emp::vector<double> & org) {
+        if (do_mutate) {
+            for (int pos = 0; pos < GENOME_SIZE; pos++) {
+                org[pos] += random_ptr->GetRandNormal(0, MUT_RATE);
+                if (org[pos] < 0) {
+                    org[pos] = 0;
+                } else if (org[pos] > 1) {
+                    org[pos] = 1;
+                }
+            }
+        }
+    });
+}
+
+
+template <typename ORG_TYPE> 
+void EcologyWorld<ORG_TYPE>::InitPop() {
+    /* This is an org_type that we don't have any fitness functions for*/
+    std::cout << "Unsporrted org type." << std::endl;
+    exit(1);
+}
+
+
+template <>
+void EcologyWorld<emp::vector<double> >::InitPop() {
+    emp::Random & random = GetRandom();
+    for (size_t i = 0; i < START_POP_SIZE; i++) {
+        emp::vector<double> vec;
+        for (int j = 0; j < GENOME_SIZE; j++ ) {
+            vec.push_back(random.GetDouble(0, 1));
+        }
+        Inject(vec);
+    }
+}
+
+template <>
+void EcologyWorld<emp::AvidaGP>::InitPop() {
+    emp::Random & random = GetRandom();
+    for (size_t i = 0; i < START_POP_SIZE; i++) {
+        emp::AvidaGP cpu;
+        cpu.PushRandom(random, GENOME_SIZE);
+        Inject(cpu.GetGenome());
+    }
+}
+
+
+template <typename ORG_TYPE> 
+void EcologyWorld<ORG_TYPE>::SetupFitnessFunctions() {
+    /* This is an org_type that we don't have any fitness functions for*/
+    std::cout << "Unsporrted org type." << std::endl;
+    exit(1);
+}
+
+template <>
+void EcologyWorld<emp::vector<double> >::SetupFitnessFunctions() {
+
+    fit_set.resize(0);
+
+    if (PROBLEM == "box") {
+        // Good hints
+        for (int i = 0; i < N_GOOD; i++) {
+            fit_set.push_back([i](const emp::vector<double> & org){
+                double score = 1 - org[i];
+                if (score < .8) {
+                    return 0.0;
+                }
+                return score;
+            });
+        }
+
+        // Bad hints
+        for (int i = N_GOOD; i < N_GOOD + N_BAD; i++) {
+            fit_set.push_back([i](const emp::vector<double> & org){
+                double score = org[i];
+                if (score < .8) {
+                    return 0.0;
+                }
+                return score;
+            });
+        }
+
+        // Neutral hints (these axes aren't evaluated)
+        for (int i = PROBLEM_DIMENSIONS; i < GENOME_SIZE; i++) {
+            fit_set.push_back([i](const emp::vector<double> & org){return org[i];});
+        }
+
+        fun_calc_fitness_t goal_function = [this](const emp::vector<double> & org){
+            double dist = 0;
+            for (int i = 0; i < PROBLEM_DIMENSIONS; i++) {
+                dist += emp::Pow(org[i], 2.0);
+            }
+
+            dist = sqrt(dist);
+            if (dist > DISTANCE_CUTOFF) {
+                return 0.01;
+            }
+
+            return 1.0/dist;
+        };
+
+        fun_calc_dist_t dist_fun = [this](const emp::vector<double> & org1, const emp::vector<double> & org2) {
+            double dist = 0;
+
+            emp_assert(org1.size() == org2.size(), org1.size(), org2.size());
+
+            for (size_t i = 0; i < org1.size(); i++) {
+                dist += emp::Pow(org1[i]-org2[i], 2.0);
+            }
+
+            return sqrt(dist);
+        };
+        
+
+
+        if (SELECTION == "SHARING") {
+            SetSharedFitFun(goal_function, dist_fun, .1, 1);
+        } else {
+            SetFitFun(goal_function);
+        }
+
+    } else {
+        std::cout << "Invalid problem specified" << std::endl;
+    }
+    // if (SELECTION == "LEXICASE") {
+    //     fit_set.push_back(goal_function);
+    // } else if (SELECTION == "TOURNAMENT") {
+    //     SetCache(true);
+    // }
+}
+
+template <>
+void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
+
+    testcases.LoadTestcases(PROBLEM);
+    fit_set.resize(0);
+
+    int count = 0;
+    for (auto testcase : testcases.GetTestcases()) {
+        fit_set.push_back([testcase, count, this](emp::AvidaGP & org){
+
+            if (emp::Has(per_genotype_data, org.GetGenome()) && ((uint32_t)(per_genotype_data[org.GetGenome()].error_vec.size()) == N_TEST_CASES)) {
+                return per_genotype_data[org.GetGenome()].error_vec[count];
+            }
+
+            org.ResetHardware();
+            for (size_t i = 0; i < testcase.first.size(); i++) {
+                org.SetInput(i, testcase.first[i]);
+            }
+
+            org.Process(200);
+            int divisor = testcase.second;
+            if (divisor == 0) {
+                divisor = 1;
+            }   
+            double result = 1 - (std::abs(org.GetOutput(0) - testcase.second)/divisor);
+            // per_genotype_data[org.GetGenome()].error_vec.push_back(result);
+            return result;
+        });
+
+        count++;
+        if (count >= (int)N_TEST_CASES) {
+            break;
+        }
+    }
+
+
+    std::function<double(const emp::AvidaGP&)> goal_function = [this](const emp::AvidaGP & org){
+
+        double total = 0;
+        for (double val : per_genotype_data[org.GetGenome()].error_vec) {
+            total += val;
+        }
+
+        return total;
+    };
+
+    fun_calc_dist_t dist_fun = [this](emp::AvidaGP & org1, emp::AvidaGP & org2) {
+        double dist = 0;
+
+        // emp_assert(org1.size() == org2.size(), org1.size(), org2.size());
+
+        // emp_assert(emp::Has(per_genotype_data, GetGenome(org1)));
+        // emp_assert(emp::Has(per_genotype_data, GetGenome(org2)));
+
+        if (!emp::Has(per_genotype_data, GetGenome(org1))){
+
+            per_genotype_data[GetGenome(org1)] = genome_info();
+            emp::AvidaGP cpu = GetGenome(org1);
+            for (auto fit_fun : fit_set) {
+                per_genotype_data[GetGenome(org1)].error_vec.push_back(fit_fun(cpu));
+            }
+
+            if (SELECTION == "LEXICASE") {
+                per_genotype_data[GetGenome(org1)].always_used = full_set;
+            }
+        }
+
+        if (!emp::Has(per_genotype_data, GetGenome(org2))){
+
+            per_genotype_data[GetGenome(org2)] = genome_info();
+            emp::AvidaGP cpu = GetGenome(org2);
+            for (auto fit_fun : fit_set) {
+                per_genotype_data[GetGenome(org2)].error_vec.push_back(fit_fun(cpu));
+            }
+
+            if (SELECTION == "LEXICASE") {
+                per_genotype_data[GetGenome(org2)].always_used = full_set;
+            }
+        }
+
+
+        emp::vector<double> err_vec1 = per_genotype_data[GetGenome(org1)].error_vec;
+        emp::vector<double> err_vec2 = per_genotype_data[GetGenome(org2)].error_vec;
+
+        if (err_vec2.size() == 0) {
+
+        }
+
+        for (size_t i = 0; i < N_TEST_CASES; i++) {
+            dist += emp::Pow(err_vec1[i] - err_vec2[i], 2.0);
+        }
+
+        return sqrt(dist);
+    };
+    
+
+
+    if (SELECTION == "SHARING") {
+        SetSharedFitFun(goal_function, dist_fun, .1, 1);
+    } else {
+        SetFitFun(goal_function);
+    }
+}
