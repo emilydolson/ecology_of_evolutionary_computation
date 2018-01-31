@@ -33,10 +33,9 @@
 \acmISBN{123-4567-24-567/08/06}
 
 %Conference
-\acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El
-  Paso, Texas USA} 
-\acmYear{1997}
-\copyrightyear{2016}
+\acmConference[GECCO '18]{the Genetic and Evolutionary Computation Conference 2018}{July 15--19, 2018}{Kyoto, Japan}
+\acmYear{2018}
+\copyrightyear{2018}
 
 
 \acmArticle{4}
@@ -44,100 +43,52 @@
 
 % These commands are optional
 %\acmBooktitle{Transactions of the ACM Woodstock conference}
-\editor{Jennifer B. Sartor}
-\editor{Theo D'Hondt}
-\editor{Wolfgang De Meuter}
+%\editor{Jennifer B. Sartor}
+%\editor{Theo D'Hondt}
+%\editor{Wolfgang De Meuter}
 
 
 \begin{document}
-\title{SIG Proceedings Paper in LaTeX Format}
+\title{Understanding Evolutionary Computation with Ecological Theory}
 \titlenote{Produces the permission block, and
   copyright information}
-\subtitle{Extended Abstract}
+\subtitle{}
 \subtitlenote{The full version of the author's guide is available as
   \texttt{acmart.pdf} document}
 
 
-\author{Ben Trovato}
-\authornote{Dr.~Trovato insisted his name be first.}
-\orcid{1234-5678-9012}
+\author{Emily Dolson}
+\authornote{}
+\orcid{0000-0001-8616-4898}
 \affiliation{%
-  \institution{Institute for Clarity in Documentation}
-  \streetaddress{P.O. Box 1212}
-  \city{Dublin} 
-  \state{Ohio} 
-  \postcode{43017-6221}
+  \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
+  \streetaddress{567 Wilson Road Room 1441}
+  \city{East Lansing} 
+  \state{Michigan} 
+  \postcode{48823}
 }
-\email{trovato@corporation.com}
+\email{dolsonem@msu.edu}
 
-\author{G.K.M. Tobin}
-\authornote{The secretary disavows any knowledge of this author's actions.}
+\author{Charles Ofria}
+\authornote{}
+\orcid{0000-0003-2924-1732}
 \affiliation{%
-  \institution{Institute for Clarity in Documentation}
-  \streetaddress{P.O. Box 1212}
-  \city{Dublin} 
-  \state{Ohio} 
-  \postcode{43017-6221}
+  \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
+  \streetaddress{567 Wilson Road Room 1441}
+  \city{East Lansing} 
+  \state{Michigan} 
+  \postcode{48823}
 }
-\email{webmaster@marysville-ohio.com}
+\email{ofria@msu.edu}
 
-\author{Lars Th{\o}rv{\"a}ld}
-\authornote{This author is the
-  one who did all the really hard work.}
-\affiliation{%
-  \institution{The Th{\o}rv{\"a}ld Group}
-  \streetaddress{1 Th{\o}rv{\"a}ld Circle}
-  \city{Hekla} 
-  \country{Iceland}}
-\email{larst@affiliation.org}
-
-\author{Valerie B\'eranger}
-\affiliation{%
-  \institution{Inria Paris-Rocquencourt}
-  \city{Rocquencourt}
-  \country{France}
-}
-\author{Aparna Patel} 
-\affiliation{%
- \institution{Rajiv Gandhi University}
- \streetaddress{Rono-Hills}
- \city{Doimukh} 
- \state{Arunachal Pradesh}
- \country{India}}
-\author{Huifen Chan}
-\affiliation{%
-  \institution{Tsinghua University}
-  \streetaddress{30 Shuangqing Rd}
-  \city{Haidian Qu} 
-  \state{Beijing Shi}
-  \country{China}
-}
-
-\author{Charles Palmer}
-\affiliation{%
-  \institution{Palmer Research Laboratories}
-  \streetaddress{8600 Datapoint Drive}
-  \city{San Antonio}
-  \state{Texas} 
-  \postcode{78229}}
-\email{cpalmer@prl.com}
-
-\author{John Smith}
-\affiliation{\institution{The Th{\o}rv{\"a}ld Group}}
-\email{jsmith@affiliation.org}
-
-\author{Julius P.~Kumquat}
-\affiliation{\institution{The Kumquat Consortium}}
-\email{jpkumquat@consortium.net}
 
 % The default list of authors is too long for headers.
-\renewcommand{\shortauthors}{B. Trovato et al.}
+\renewcommand{\shortauthors}{E. Dolson and C. Ofria}
 
 
 \begin{abstract}
-This paper provides a sample of a \LaTeX\ document which conforms,
-somewhat loosely, to the formatting guidelines for
-ACM SIG Proceedings.\footnote{This is an abstract footnote}
+Evolutionary algorithms often incorporate ecological concepts to help maintain diverse populations and drive continued innovation. However, while there is strong evidence for the value of ecological dynamics, the precise mechanisms behind these results are not always clear. These gaps in our understanding make it challenging to predict which approaches will be most appropriate for a given problem. Ecologists have addressed similar questions for many decades, but the resulting body of theory has yet to be fully translated into an evolutionary context. This paper lays the groundwork for such a translation by adapting ecological theory to three different selection mechanisms in evolutionary computation: fitness sharing, lexicase selection, and Eco-EA. First, we use ecological ideas to establish a framework that clarifies where these selection schemes are alike and where they differ. We then build upon this framework by using metrics from ecology to gather empirical data about the underlying differences in the population dynamics that these approaches produce. Specifically, we measure phylogenetic relationships within the population to explore long-term stable coexistence. These results can inform parameter selection, choice of selection scheme, and the development of new selection schemes.
+
 \end{abstract}
 
 %
@@ -147,33 +98,27 @@ ACM SIG Proceedings.\footnote{This is an abstract footnote}
 %
 \begin{CCSXML}
 <ccs2012>
- <concept>
-  <concept_id>10010520.10010553.10010562</concept_id>
-  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010575.10010755</concept_id>
-  <concept_desc>Computer systems organization~Redundancy</concept_desc>
-  <concept_significance>300</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010553.10010554</concept_id>
-  <concept_desc>Computer systems organization~Robotics</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
- <concept>
-  <concept_id>10003033.10003083.10003095</concept_id>
-  <concept_desc>Networks~Network reliability</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
-</ccs2012>  
+<concept>
+<concept_id>10010147.10010257.10010293.10011809.10011810</concept_id>
+<concept_desc>Computing methodologies~Artificial life</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010257.10010293.10011809.10011812</concept_id>
+<concept_desc>Computing methodologies~Genetic algorithms</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010257.10010293.10011809.10011813</concept_id>
+<concept_desc>Computing methodologies~Genetic programming</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
 \end{CCSXML}
 
-\ccsdesc[500]{Computer systems organization~Embedded systems}
-\ccsdesc[300]{Computer systems organization~Redundancy}
-\ccsdesc{Computer systems organization~Robotics}
-\ccsdesc[100]{Networks~Network reliability}
+\ccsdesc[500]{Computing methodologies~Artificial life}
+\ccsdesc[500]{Computing methodologies~Genetic algorithms}
+\ccsdesc[500]{Computing methodologies~Genetic programming}
 
 
 \keywords{ACM proceedings, \LaTeX, text tagging}

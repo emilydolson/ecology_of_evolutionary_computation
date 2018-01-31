@@ -1,100 +1,51 @@
 \section{Introduction}
 
-The \textit{proceedings} are the records of a conference.\footnote{This
-  is a footnote}  ACM seeks
-to give these conference by-products a uniform, high-quality
-appearance.  To do this, ACM has some rigid requirements for the
-format of the proceedings documents: there is a specified format
-(balanced double columns), a specified set of fonts (Arial or
-Helvetica and Times Roman) in certain specified sizes, a specified
-live area, centered on the page, specified size of margins, specified
-column width and gutter size.
+Evolutionary computation researchers have devoted a great deal of attention to understanding how to promote stable coexistence between lineages exploring different regions of a fitness landscape. By definition, any processes that promote this behavior would be classified by biologists as ecological dynamics: effects of short time-scale interactions between individuals that are not closely related. Ecologists have developed robust mathematical models to explain the precise parameter ranges under which different species can stably coexist. While translating these results to evolving systems is challenging due to the resulting eco-evolutionary feedback loops,  it has the potential to clarify important unresolved questions about ecological dynamics used in evolutionary computation. 
 
-\section{The Body of The Paper}
-Typically, the body of a paper is organized into a hierarchical
-structure, with numbered or unnumbered headings for sections,
-subsections, sub-subsections, and even smaller sections.  The command
-\texttt{{\char'134}section} that precedes this paragraph is part of
-such a hierarchy.\footnote{This is a footnote.} \LaTeX\ handles the
-numbering and placement of these headings for you, when you use the
-appropriate heading commands around the titles of the headings.  If
-you want a sub-subsection or smaller part to be unnumbered in your
-output, simply append an asterisk to the command name.  Examples of
-both numbered and unnumbered headings will appear throughout the
-balance of this sample document.
+Promoting diversity within an evolving population is important for evolutionary computation because it encourages exploration of a higher percentage of the fitness landscape and reduces the chances of premature convergence on a suboptimal fitness peak. However, some types of diversity facilitate finding the global optimum better than other types. For instance, increasing the mutation rate generates more new genotypes but is unlikely to meaningfully increase the spread of the population across the fitness landscape. Even amongst more advanced approaches to generating and maintaining diversity, some seem to systematically produce diversity that is spread across the fitness landscape in ways that are more conducive to solving a given problem than the diversity produced by other approaches. We hypothesize that a better mechanistic understanding of the underlying ecological dynamics will facilitate making better choices about which approach is most appropriate for which problems (this applies both to low-level choices like parameter settings and high-level choices like which selection mechanism to use). Additionally, by clarifying which aspects of existing algorithms are driving the desired results, we may be able to design more effective variations on them.
 
-Because the entire article is contained in the \textbf{document}
-environment, you can indicate the start of a new paragraph with a
-blank line in your input file; that is why this sentence forms a
-separate paragraph.
 
-\subsection{Type Changes and {\itshape Special} Characters}
+\subsection{Primer on coexistence theory}
 
-We have already seen several typeface changes in this sample.  You can
-indicate italicized words or phrases in your text with the command
-\texttt{{\char'134}textit}; emboldening with the command
-\texttt{{\char'134}textbf} and typewriter-style (for instance, for
-computer code) with \texttt{{\char'134}texttt}.  But remember, you do
-not have to indicate typestyle changes when such changes are part of
-the \textit{structural} elements of your article; for instance, the
-heading of this subsection will be in a sans serif\footnote{Another
-  footnote here.  Let's make this a rather long one to see how it
-  looks.} typeface, but that is handled by the document class file.
-Take care with the use of\footnote{Another footnote.}  the
-curly braces in typeface changes; they mark the beginning and end of
-the text that is to be in the different typeface.
+- Niches based on climatic tolerance vs. niches based on outcompeting others when resource is present.
 
-You can use whatever symbols, accented characters, or non-English
-characters you need anywhere in your document; you can find a complete
-list of what is available in the \textit{\LaTeX\ User's Guide}
-\cite{Lamport:LaTeX}.
+- Resources = public goods. Using them harms all others that could use them
 
-\subsection{Math Equations}
-You may want to display math equations in three distinct styles:
-inline, numbered or non-numbered display.  Each of
-the three are discussed in the next sections.
+- hypothesized ideal characteristics for EC
 
-\subsubsection{Inline (In-text) Equations}
-A formula that appears in the running text is called an
-inline or in-text formula.  It is produced by the
-\textbf{math} environment, which can be
-invoked with the usual \texttt{{\char'134}begin\,\ldots{\char'134}end}
-construction or with the short form \texttt{\$\,\ldots\$}. You
-can use any of the symbols and structures,
-from $\alpha$ to $\omega$, available in
-\LaTeX~\cite{Lamport:LaTeX}; this section will simply show a
-few examples of in-text equations in context. Notice how
-this equation:
-\begin{math}
-  \lim_{n\rightarrow \infty}x=0
-\end{math},
-set here in in-line math style, looks slightly different when
-set in display style.  (See next section).
+- how various selection schemes fit into ecology
+- Fitness sharing
 
-\subsubsection{Display Equations}
-A numbered display equation---one set off by vertical space from the
-text and centered horizontally---is produced by the \textbf{equation}
-environment. An unnumbered display equation is produced by the
-\textbf{displaymath} environment.
+\subsection{Lexicase Selection}
+In lexicase selection, a large number of criteria are chosen for solutions to be evaluated on. Traditionally, these criteria are each individual test cases, but recent work suggests that other types of fitness functions are also effective [CITE GPTP paper?]. Every time an individual is selected to reproduce, the selection criteria are randomly reordered. The entire population is evaluated on the first one. The individuals that perform best on this first criterion are then evaluated on the second criterion. The ones that perform best on that criterion are then evaluated on the third, and so on, until only one individual remains or all criteria have been used and the winner is selection randomly from the remaining options.
 
-Again, in either environment, you can use any of the symbols
-and structures available in \LaTeX\@; this section will just
-give a couple of examples of display equations in context.
-First, consider the equation, shown as an inline equation above:
+In ecological terms, this creates a vast number of niches nested within each other. While it is tempting to use a resource metaphor to understand the competition within these niches, this is actually incorrect and misleading. Whereas using a resource harms all others that use that resource, improving on a selection criterion in lexicase selection only harms a (usually small) subset of the population. Instead, we argue that population structure is a better metaphor for lexicase selection. Imagine $N!$ islands, where each island corresponds to a single potential ordering of selection criteria and can only be inhabited by the individuals that are best at that ordering. Each island has a fixed amount of space. This is analagous to situations in nature where niches are defined exclusively by ability to survive a set of abiotic conditions. Being better able to survive these conditions increases the number of offspring an individual can have. Over time, genotypes that are better at surviving in a given set of conditions competitively exclude those that are worse. In the case of lexicase selection, this competitive exclusion happens more rapidly than it usually would in biology, but the principle is the same. 
+
+- Mention weird thing about all space being adjacent
+
+$N!$ is the maximum number of genotypes that should be able to stably coexist in the long term within a population under lexicase selection. While islands can potentially be inhabited by multiple genotypes that are equally able to occupy it, this coexistence will be unstable if neither genotype has another island to itself. The instability results from the fact that, within a single island, each genotype has equal fitness and competes with itself the same amount that it competes with other genotypes on the island. Thus, as stated in equation [EQUATION], there is no stabilizing pressure to increase the populations of rare genotypes within an island. Eventually, all but one should stochastically go extinct.
+
+Because of the laws of probability, this coexistence is not technically permanent. Orderings are selected randomly, and there is always a chance that a given one will not be selected on a given generation. However, as the number of solutions that can live on each island ($\frac{population}{N!}$) increases, the odds of a catastrophic event that wipes out a whole island decrease rapidly. We can extend this rule to also cover the many cases where the total population size is less than the number of islands (i.e. islands can support less than one individual each). In these cases, it is no longer sufficient to control a single island. Instead, we calculate the sum of the total controlled area (counting fractions of islands, in the case of ties). This process produces a single number, $w$ for each genotype, indicating what fraction of the total space it controls. We use the variable $w$ here for consistency with biological theory, because this value also corresponds to an individual's probability of being selected, i.e. its biological fitness. Just as species in nature face greater risk of stochastic extinction of their range (the area they inhabit) is too small, so too do genotypes in lexicase selection. The chances of surviving for $G$ generations are given by the equation:
+
 \begin{equation}
-  \lim_{n\rightarrow \infty}x=0
+(1 - (1-w)^{population size})^{G}
 \end{equation}
-Notice how it is formatted somewhat differently in
-the \textbf{displaymath}
-environment.  Now, we'll enter an unnumbered equation:
-\begin{displaymath}
-  \sum_{i=0}^{\infty} x + 1
-\end{displaymath}
-and follow it with another numbered equation:
-\begin{equation}
-  \sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f
-\end{equation}
-just to demonstrate \LaTeX's able handling of numbering.
+Plotting these functions, we can see that 
+
+The selection criteria determine which other individuals in the population a given solution is competeing with for space. 
+
+\subsection{MAP-Elites}
+
+
+\subsection{Eco-EA}
+Developed by Goings and Ofria, Eco-EA is an approach to solving complex problems by associating limited resources with solving various components of the larger problem. When a population first solves a sub-task, the associated resource is plentiful and the individuals capable of using it are very successful. As the number of individuals using the resource increases, it become less valuable. 
+
+\section{Methods}
+
+\section{Results and Discussion}
+
+\section{Conclusion}
+
 
 \subsection{Citations}
 Citations to articles~\cite{bowman:reasoning,
