@@ -10,7 +10,47 @@
 #include "data/DataNode.h"
 #include "control/Signal.h"
 #include "tools/map_utils.h"
+#include "tools/memo_function.h"
 #include <map>
+#include <unordered_map>
+
+namespace std {
+    template <>
+    struct hash<std::vector<double>> {
+        std::size_t operator() (const std::vector<double> &vc) const
+        {
+            std::size_t seed = vc.size();
+            for (auto& i : vc) {
+                seed ^= std::hash<double>{}(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    #ifndef NDEBUG
+
+    template <>
+    struct hash<emp::vector<double>> {
+        std::size_t operator() (const emp::vector<double> &vc) const
+        {
+            std::size_t seed = vc.size();
+            for (auto& i : vc) {
+                seed ^= std::hash<double>{}(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    #endif
+
+    template <>
+    struct hash<emp::AvidaCPU_Base<emp::AvidaGP>::Genome> {
+        std::size_t operator() (const emp::AvidaCPU_Base<emp::AvidaGP>::Genome &vc) const
+        {
+            return vc.Hash();
+        }
+    };
+}
 
 EMP_BUILD_CONFIG( BoxConfig,
   GROUP(DEFAULT, "Default settings for box experiment"),
@@ -69,7 +109,9 @@ public:
     using emp::World<ORG_TYPE>::Inject;    
     using emp::World<ORG_TYPE>::GetGenomeAt;    
     using emp::World<ORG_TYPE>::GetGenome;    
-    
+    using emp::World<ORG_TYPE>::SetCache;    
+    using emp::World<ORG_TYPE>::ClearCache;    
+
     uint32_t POP_SIZE;
     uint32_t START_POP_SIZE;
     int N_NEUTRAL;
@@ -95,7 +137,7 @@ public:
 
     bool do_mutate = true;
 
-    std::map<genome_t, genome_info> per_genotype_data;
+    std::unordered_map<genome_t, genome_info> per_genotype_data;
 
     bool destructed = false;
 
@@ -120,7 +162,7 @@ public:
     emp::DataNode<size_t, emp::data::Range> sometimes_used;
     emp::DataNode<size_t, emp::data::Range> always_used;
 
-    emp::DataNode<size_t, emp::data::Range> evolutionary_distinctiveness;
+    emp::DataNode<double, emp::data::Range> evolutionary_distinctiveness;
 
     EcologyWorld() {}
     EcologyWorld(emp::Random & rnd) : emp::World<ORG_TYPE>(rnd) {}
@@ -157,6 +199,7 @@ public:
     void Setup(BoxConfig & config) {
 
         SetWellMixed(true);
+        SetCache(true);
 
         InitConfigs(config);
 
@@ -186,15 +229,16 @@ public:
         systematics.OnNew([this](emp::Ptr<genotype_t> org){
             if (!emp::Has(per_genotype_data, org->GetInfo())){
 
-                per_genotype_data[org->GetInfo()] = genome_info();
+                genome_info gen;
                 ORG_TYPE cpu = org->GetInfo();
                 for (auto fit_fun : fit_set) {
-                    per_genotype_data[org->GetInfo()].error_vec.push_back(fit_fun(cpu));
+                    gen.error_vec.push_back(fit_fun(cpu));
                 }
 
                 if (SELECTION == "LEXICASE") {
-                    per_genotype_data[org->GetInfo()].always_used = full_set;
+                    gen.always_used = full_set;
                 }
+                per_genotype_data[org->GetInfo()] = gen;
             }
 
         });
@@ -312,7 +356,7 @@ public:
         }
 
         Update();
-        
+        ClearCache();
 
 
         // if (isinf(GetFitnessDataNode().GetMax())){
@@ -387,7 +431,7 @@ void EcologyWorld<emp::AvidaGP>::SetupMutationFunctions() {
     OnOffspringReady([this](emp::AvidaGP & org) {
         if (do_mutate) {
             
-            uint32_t num_muts = random_ptr->GetUInt(MUT_RATE*GetGenome(org).sequence.size());  // 0 to 3 mutations.
+            uint32_t num_muts = random_ptr->GetRandPoisson(MUT_RATE*GetGenome(org).sequence.size());  // 0 to 3 mutations.
             for (uint32_t m = 0; m < num_muts; m++) {
                 const uint32_t pos = random_ptr->GetUInt(GENOME_SIZE);
                 org.RandomizeInst(pos, *random_ptr);
@@ -585,39 +629,38 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
         // emp_assert(emp::Has(per_genotype_data, GetGenome(org1)));
         // emp_assert(emp::Has(per_genotype_data, GetGenome(org2)));
 
-        if (!emp::Has(per_genotype_data, GetGenome(org1))){
+        auto it1 = per_genotype_data.find(GetGenome(org1));
+        auto it2 = per_genotype_data.find(GetGenome(org2));
+
+        if (it1 == per_genotype_data.end()){
 
             per_genotype_data[GetGenome(org1)] = genome_info();
-            emp::AvidaGP cpu = GetGenome(org1);
             for (auto fit_fun : fit_set) {
-                per_genotype_data[GetGenome(org1)].error_vec.push_back(fit_fun(cpu));
+                per_genotype_data[GetGenome(org1)].error_vec.push_back(fit_fun(org1));
             }
 
             if (SELECTION == "LEXICASE") {
                 per_genotype_data[GetGenome(org1)].always_used = full_set;
             }
+            it1 = per_genotype_data.find(GetGenome(org1));
         }
 
-        if (!emp::Has(per_genotype_data, GetGenome(org2))){
+        if (it2 == per_genotype_data.end()){
 
             per_genotype_data[GetGenome(org2)] = genome_info();
-            emp::AvidaGP cpu = GetGenome(org2);
             for (auto fit_fun : fit_set) {
-                per_genotype_data[GetGenome(org2)].error_vec.push_back(fit_fun(cpu));
+                per_genotype_data[GetGenome(org2)].error_vec.push_back(fit_fun(org2));
             }
 
             if (SELECTION == "LEXICASE") {
                 per_genotype_data[GetGenome(org2)].always_used = full_set;
             }
+            it2 = per_genotype_data.find(GetGenome(org2));
         }
 
 
-        emp::vector<double> err_vec1 = per_genotype_data[GetGenome(org1)].error_vec;
-        emp::vector<double> err_vec2 = per_genotype_data[GetGenome(org2)].error_vec;
-
-        if (err_vec2.size() == 0) {
-
-        }
+        emp::vector<double> & err_vec1 = it1->second.error_vec;
+        emp::vector<double> & err_vec2 = it2->second.error_vec;
 
         for (size_t i = 0; i < N_TEST_CASES; i++) {
             dist += emp::Pow(err_vec1[i] - err_vec2[i], 2.0);
