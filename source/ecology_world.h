@@ -204,7 +204,7 @@ public:
         std::map<emp::vector<double>, int> phen_counts;
         for (auto tax : systematics.GetActive()) {
             emp::vector<double> phen = per_genotype_data[tax->GetInfo()].error_vec;
-            if (Has(phen_counts, phen)) {
+            if (emp::Has(phen_counts, phen)) {
                 phen_counts[phen] += tax->GetNumOrgs();
             } else {
                 phen_counts[phen] = tax->GetNumOrgs();
@@ -218,7 +218,7 @@ public:
         std::map<emp::vector<double>, int> phen_counts;
         for (auto tax : systematics.GetActive()) {
             emp::vector<double> phen = per_genotype_data[tax->GetInfo()].error_vec;
-            if (Has(phen_counts, phen)) {
+            if (emp::Has(phen_counts, phen)) {
                 phen_counts[phen] += tax->GetNumOrgs();
             } else {
                 phen_counts[phen] = tax->GetNumOrgs();
