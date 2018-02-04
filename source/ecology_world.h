@@ -166,6 +166,7 @@ public:
 
     emp::DataNode<double, emp::data::Range> evolutionary_distinctiveness;
 
+
     EcologyWorld() {}
     EcologyWorld(emp::Random & rnd) : emp::World<ORG_TYPE>(rnd) {}
     ~EcologyWorld() {destructed = true;};
@@ -198,6 +199,39 @@ public:
     void SetupFitnessFunctions();
 
     void SetupMutationFunctions();
+
+    double PhenotypicRichness() {
+        std::map<emp::vector<double>, int> phen_counts;
+        for (auto tax : systematics.GetActive()) {
+            emp::vector<double> phen = per_genotype_data[tax->GetInfo()].error_vec;
+            if (Has(phen_counts, phen)) {
+                phen_counts[phen] += tax->GetNumOrgs();
+            } else {
+                phen_counts[phen] = tax->GetNumOrgs();
+            }
+        }
+
+        return phen_counts.size();
+    }
+
+    double PhenotypicEntropy() {
+        std::map<emp::vector<double>, int> phen_counts;
+        for (auto tax : systematics.GetActive()) {
+            emp::vector<double> phen = per_genotype_data[tax->GetInfo()].error_vec;
+            if (Has(phen_counts, phen)) {
+                phen_counts[phen] += tax->GetNumOrgs();
+            } else {
+                phen_counts[phen] = tax->GetNumOrgs();
+            }
+        }
+
+        emp::vector<int> counts;
+        for (auto phen : phen_counts) {
+            counts.push_back(phen.second);
+        }
+
+        return emp::Entropy(counts);
+    }
 
     void Setup(BoxConfig & config) {
 
@@ -297,7 +331,9 @@ public:
         extra_systematics_file.AddMean(evolutionary_distinctiveness, "mean_evolutionary_distinctiveness"); 
         extra_systematics_file.AddMin(evolutionary_distinctiveness, "min_evolutionary_distinctiveness");     
         extra_systematics_file.AddMax(evolutionary_distinctiveness, "max_evolutionary_distinctiveness"); 
-
+        extra_systematics_file.AddFun<double>([this](){return PhenotypicRichness();}, "phenotypic_richness"); 
+        extra_systematics_file.AddFun<double>([this](){return PhenotypicEntropy();}, "phenotypic_entropy");         
+        
         extra_systematics_file.PrintHeaderKeys();
 
     }
@@ -434,7 +470,7 @@ void EcologyWorld<emp::AvidaGP>::SetupMutationFunctions() {
     OnOffspringReady([this](emp::AvidaGP & org) {
         if (do_mutate) {
             
-            uint32_t num_muts = random_ptr->GetRandPoisson(MUT_RATE*GetGenome(org).sequence.size());  // 0 to 3 mutations.
+            uint32_t num_muts = random_ptr->GetUInt(MUT_RATE);  // 0 to 3 mutations.
             for (uint32_t m = 0; m < num_muts; m++) {
                 const uint32_t pos = random_ptr->GetUInt(GENOME_SIZE);
                 org.RandomizeInst(pos, *random_ptr);
