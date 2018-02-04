@@ -73,6 +73,7 @@ EMP_BUILD_CONFIG( BoxConfig,
   VALUE(COST, double, 0, "Cost of doing task unsuccessfully"),
   VALUE(FRAC, double, .0025, "Percent of resource individual can use"),
   VALUE(GENOME_SIZE, int, 200, "Length of genome"),
+  VALUE(SHARE_THRESHOLD, double, 10, "How similar do two solutions need to be to be in the same niche?"),  
   VALUE(MAX_RES_USE, double, 5, "Maximum quantity of resource that individual can use")
 )
 
@@ -134,6 +135,7 @@ public:
     int failed = 0;
     std::string PROBLEM;
     uint32_t N_TEST_CASES;
+    double SHARE_THRESHOLD;
 
     bool do_mutate = true;
 
@@ -189,6 +191,7 @@ public:
         MAX_RES_USE = config.MAX_RES_USE();
         PROBLEM = config.PROBLEM();
         N_TEST_CASES = config.N_TEST_CASES();        
+        SHARE_THRESHOLD = config.SHARE_THRESHOLD();        
     }
     void InitPop();
 
@@ -600,6 +603,10 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
                 divisor = 1;
             }   
             double result = 1 - (std::abs(org.GetOutput(0) - testcase.second)/divisor);
+            // emp_assert(std::abs(result) != INFINITY);
+            if (result == -INFINITY) {
+                result = -999999999;
+            }
             // per_genotype_data[org.GetGenome()].error_vec.push_back(result);
             return result;
         });
@@ -672,7 +679,7 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
 
 
     if (SELECTION == "SHARING") {
-        SetSharedFitFun(goal_function, dist_fun, .1, 1);
+        SetSharedFitFun(goal_function, dist_fun, SHARE_THRESHOLD, 1);
     } else {
         SetFitFun(goal_function);
     }
