@@ -84,6 +84,7 @@ struct genome_info {
     std::set<size_t> sometimes_used;
     bool selected = false;
     emp::vector<double> error_vec;
+    double fit = 0;
 
 };
 
@@ -274,6 +275,7 @@ public:
                 for (auto fit_fun : fit_set) {
                     gen.error_vec.push_back(fit_fun(cpu));
                 }
+                gen.fit = emp::Sum(gen.error_vec);
 
                 if (SELECTION == "LEXICASE") {
                     gen.always_used = full_set;
@@ -356,7 +358,7 @@ public:
         } else if (SELECTION == "LEXICASE") {
             emp::LexicaseSelect(*this, fit_set, POP_SIZE-1);
         } else if (SELECTION == "RESOURCE") {
-            emp::ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST, false);
+            emp::ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST, true);
             for (emp::Ptr<ORG_TYPE> org : pop) {
                 if (per_genotype_data[GetGenome(*org)].always_used.size() == 0) {
                     std::set<size_t> niches;
@@ -664,6 +666,7 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
             for (size_t i = 0; i < testcase.first.size(); i++) {
                 org.SetInput(i, testcase.first[i]);
             }
+            org.SetOutput(0,-99999); // Otherwise not outputting anything is a decent strategy
 
             org.Process(200);
             int divisor = testcase.second;
@@ -688,12 +691,14 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
 
     std::function<double(const emp::AvidaGP&)> goal_function = [this](const emp::AvidaGP & org){
 
-        double total = 0;
-        for (double val : per_genotype_data[org.GetGenome()].error_vec) {
-            total += val;
-        }
+        // double total = 0;
+        // for (double val : per_genotype_data[org.GetGenome()].error_vec) {
+        //     total += val;
+        // }
 
-        return total;
+        // return total;
+        return per_genotype_data[org.GetGenome()].fit;
+
     };
 
     fun_calc_dist_t dist_fun = [this](emp::AvidaGP & org1, emp::AvidaGP & org2) {
@@ -714,6 +719,8 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
                 per_genotype_data[GetGenome(org1)].error_vec.push_back(fit_fun(org1));
             }
 
+            per_genotype_data[GetGenome(org1)].fit = emp::Sum(per_genotype_data[GetGenome(org1)].error_vec);
+
             if (SELECTION == "LEXICASE") {
                 per_genotype_data[GetGenome(org1)].always_used = full_set;
             }
@@ -726,6 +733,7 @@ void EcologyWorld<emp::AvidaGP>::SetupFitnessFunctions() {
             for (auto fit_fun : fit_set) {
                 per_genotype_data[GetGenome(org2)].error_vec.push_back(fit_fun(org2));
             }
+            per_genotype_data[GetGenome(org1)].fit = emp::Sum(per_genotype_data[GetGenome(org1)].error_vec);
 
             if (SELECTION == "LEXICASE") {
                 per_genotype_data[GetGenome(org2)].always_used = full_set;
