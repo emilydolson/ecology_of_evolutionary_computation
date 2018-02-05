@@ -1,0 +1,105 @@
+---
+title: "evo_ecomp_ecology"
+author: "Emily Dolson"
+date: "February 2, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Read in the data
+
+```{r cars}
+library(ggplot2)
+library(readr)
+all_data <- read_csv("~/repos/evo_comp_ecology/analysis/all_data.csv")
+all_data$id <- as.integer(all_data$seed)
+sharing_collatz <- subset(all_data, selection=="sharing")
+sharing_collatz$sel_param <- as.factor(sharing_collatz$sel_param)
+resource_collatz <- subset(all_data, selection=="resource")
+resource_collatz$sel_param <- as.factor(resource_collatz$sel_param)
+lexicase_collatz <- subset(all_data, selection=="lexicase")
+lexicase_collatz$sel_param <- as.factor(lexicase_collatz$sel_param)
+
+representative_collatz <- subset(all_data, (all_data$sel_param == 10 | all_data$selection != "sharing") & (all_data$sel_param == -1 | all_data$selection != "lexicase") & (all_data$sel_param == -1 | all_data$selection != "resource") )
+
+square_data <- read_csv("~/repos/evo_comp_ecology/analysis/square_data.csv")
+square_data$id <- as.integer(square_data$seed)
+sharing_square <- subset(square_data, selection=="sharing")
+sharing_square$sel_param <- as.factor(sharing_square$sel_param)
+resource_square <- subset(square_data, selection=="resource")
+resource_square$sel_param <- as.factor(resource_square$sel_param)
+lexicase_square <- subset(square_data, selection=="lexicase")
+lexicase_square$sel_param <- as.factor(lexicase_square$sel_param)
+
+representative_square <- subset(square_data, (square_data$sel_param == .1 | square_data$selection != "sharing") & (square_data$sel_param == 11 | square_data$selection != "lexicase") & (square_data$sel_param == 500 | square_data$selection != "resource") )
+
+
+```
+
+```{r}
+ggplot(data=subset(representative_collatz, representative_collatz$update == 990)) + geom_violin(aes(x=selection, y=phylogenetic_diversity)) + theme_classic()
+
+```
+
+Okay, that looks high for lexicase and resource and low for sharing and tournament. Makes sense.
+
+```{r}
+
+ggplot(data=subset(representative_collatz, representative_collatz$update == 990)) + geom_violin(aes(x=selection, y=mrca_depth)) + theme_classic()
+
+```
+
+Low for lexicase and resource is consistent with the previous graph.
+
+Does fitness sharing threshold matter?
+
+```{r}
+ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phylogenetic_diversity, group=sel_param, color=sel_param, fill=sel_param), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Update") + scale_y_continuous()
+```
+Ah, yes it does. Looks like there's a clear optimum in the vicinity of 10. Graphing similar metrics (evolutionary distinctiveness, mean_pairwise distance, etc) is similar.
+
+Does that pattern hold across non-phylogenetic diveristy?
+
+```{r}
+ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phenotypic_entropy, group=sel_param, color=sel_param, fill=sel_param), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Update") + scale_y_continuous()
+```
+Huh. Apparently not. That's important.
+
+What about genotypic diversity?
+```{r}
+ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=diversity, group=sel_param, color=sel_param, fill=sel_param), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Update") + scale_y_continuous()
+```
+Those are all pretty close together, but if any of them are higher than the others, it's not 10.
+
+Let's do some quick stats.
+
+```{r}
+share_collatz_endpoints <- subset(sharing_collatz, sharing_collatz$update == 990)
+kruskal.test(phenotypic_entropy ~ sel_param, data=share_collatz_endpoints)
+pairwise.wilcox.test(share_collatz_endpoints$phenotypic_entropy, share_collatz_endpoints$sel_param, p.adjust.method = "bonferroni")
+```
+Okay, those are significantly different from each other.
+
+```{r}
+kruskal.test(phylogenetic_diversity ~ sel_param, data=share_collatz_endpoints)
+pairwise.wilcox.test(share_collatz_endpoints$phylogenetic_diversity, share_collatz_endpoints$sel_param, p.adjust.method = "bonferroni")
+```
+10 is significantly different from everything else. So these orderings are actually different from each other.
+
+```{r}
+ggplot(data=share_collatz_endpoints) + geom_violin(aes(x=sel_param, y=mean_pairwise_distance, fill=sel_param)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Sharing threshold") + scale_y_continuous("Mean pairwise distance")
+ggsave("../figs/sharing_pairwise_dist.png")
+
+ggplot(data=share_collatz_endpoints) + geom_violin(aes(x=sel_param, y=phenotypic_entropy, fill=sel_param)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Sharing threshold") + scale_y_continuous("Mean pairwise distance")
+ggsave("../figs/sharing_phenotypic_entropy.png")
+
+ggplot(data=subset(representative_collatz, representative_collatz$update == 990)) + geom_violin(aes(x=selection, y=phylogenetic_diversity, fill=selection)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Selection scheme") + scale_y_continuous("Phylogenetic diversity")
+ggsave("../figs/phylo_all.png")
+
+ggplot(data=subset(representative_collatz, representative_collatz$update == 990)) + geom_violin(aes(x=selection, y=phenotypic_entropy, fill=selection)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Selection scheme") + scale_y_continuous("Phylogenetic diversity")
+ggsave("../figs/pheno_all.png")
+
+```
