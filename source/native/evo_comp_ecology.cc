@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
   emp::Random rnd(config.SEED());
 
-  if (config.PROBLEM() == "box") {
+  if (config.PROBLEM() == "box" || config.PROBLEM() == "cec") {
     using ORG_TYPE = emp::vector<double>;
     EcologyWorld<ORG_TYPE> world(rnd);
     world.Setup(config);

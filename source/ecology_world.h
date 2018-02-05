@@ -14,6 +14,8 @@
 #include <map>
 #include <unordered_map>
 
+// #include "cec2013.h"
+
 namespace std {
     template <>
     struct hash<std::vector<double>> {
@@ -199,6 +201,7 @@ public:
     void SetupFitnessFunctions();
 
     void SetupMutationFunctions();
+    void PrintBest();
 
     double PhenotypicRichness() {
         std::map<emp::vector<double>, int> phen_counts;
@@ -396,8 +399,7 @@ public:
 
         Update();
         ClearCache();
-
-
+        PrintBest();
         // if (isinf(GetFitnessDataNode().GetMax())){
         //     return;
         // }
@@ -428,7 +430,7 @@ public:
         for (const auto & x : systematics.GetActive()) {
             int parent_id = 0;
             if (x->GetParent()) {
-                parent_id = x->GetParent();
+                parent_id = x->GetParent()->GetID();
             }
 
           detail_file << x->GetID() << "," << x->GetNumOrgs() << "," << x->GetNumOff() << ","
@@ -454,7 +456,37 @@ public:
     }
 };
 
+template <> 
+void EcologyWorld<emp::AvidaGP>::PrintBest() {
+        std::ofstream detail_file;
+        detail_file.open("best.org");
 
+        for (auto org : pop) {
+            if (emp::Sum(per_genotype_data[org->GetGenome()].error_vec) == per_genotype_data[org->GetGenome()].error_vec.size()) {
+                pop[0]->PrintGenome(detail_file);
+                detail_file.close();
+                return;
+   
+            }
+        }
+
+}
+
+template <> 
+void EcologyWorld<emp::vector<double>>::PrintBest() {
+        std::ofstream detail_file;
+        detail_file.open("best.org");
+
+        detail_file << emp::to_string(*pop[0]);
+        detail_file.close();
+}
+
+template <typename ORG_TYPE> 
+void EcologyWorld<ORG_TYPE>::PrintBest() {
+    /* This is an org_type that we don't have any fitness functions for*/
+    std::cout << "Unsporrted org type." << std::endl;
+    exit(1);
+}
 
 template <typename ORG_TYPE> 
 void EcologyWorld<ORG_TYPE>::SetupMutationFunctions() {
