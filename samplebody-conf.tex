@@ -123,16 +123,33 @@ While theory offers a good mental framework to understand empirical results, it 
 In section 2, we made a number of predictions about the competitive pressures that different selection schemes exert on a population. We can assess the accuracy of these predictions by drawing interaction networks for populations being subjected to these selection schemes. For ease of understanding in the context of this preliminary analysis, we will use very simple populations. The individuals in these populations are vectors of 5 numbers. Each number represents a niche which these individuals are competing to occupy. In the context of fitness sharing, this means that distance is measured as euclidean distance between each pair of vectors. For lexicase selection, each position in the vector is a selection criterion and the individual with the highest value there wins. In Eco-EA, there is a resource associated with each position in the vector and an individual's value at that position defines its ability to use that resource. For simplicity, the fitness landscape is otherwise flat. We will compare the same population of 10 individuals across all selection schemes. To calculate the effect that a given individual, $A$ has on another individual, $B$, we first calculate the fitness of $A$ in the presence of the whole population. Then we remove $B$ from the population and recalculate the fitness of $A$. The difference between these two fitnesses is the effect of $A$ on $B$. Note that these fitness values are biological fitness, i.e. the probability of being selected to reproduce, rather than the fitness produced by the fitness function.  For fitness sharing and Eco-EA, we assumed a tournament size of 2 when making this calculation.
 
 \subsection{Phylogenetic analysis of evolved populations}
+What is the long term effect of these different interaction network topologies? We can arrive at a first-order approximation by analyzing the phylogenies of populations evolved under the different selection schemes. In any of these selection schemes, the behavior of a population depends on the part of the fitness landscape that it is currently exploring. If the entire population is climbing a steep hill, all forms of diversity should be low, due to frequent selective sweeps. Thus, we can only observe the dynamics of phylogenetic diversity at a time when the population is not converging on a global optimum. To ensure that this was the case, we selected a known hard problem: the collatz problem~\cite{helmuth_general_2015}. We evolved linear genetic programs to solve this problem for 1000 generations, enough time for them to achieve approximately half of the maximum possible fitness, on average. Following the suggestion of~\cite{helmuth_general_2015}, we used 100 test cases. Phenotypes were the vectors of inverse error for each test case (so higher scores were better). Fitness was calculated as the sum of these vectors. For lexicase selection and Eco-EA, each test case corresponded to a selection criterion or resource. 
+
+We performed 30 runs of evolution for each selection scheme. Because of the profound effect of the sharing threshold parameter on the behavior of fitness sharing, we also performed 30 runs each of fitness sharing with five different sharing thresholds. For each run, we calculated a variety of metrics, including phenotypic diveristy, genotypic diversity, phylogenetic diversity~\cite{faith_conservation_1992}, and mean pairwise distance of genotypes in the phylogeny~\cite{webb_exploring_2000}. 
 
 \subsection{Statistical methods}
-
+That statistical significance of all comparisons of metrics across conditions was assessed using a kruskal-wallis test. Differences between specific conditions were assessed with a post-hoc pairwise wilcox rank-sum test accompanied by a Bonferroni correction for multiple comparisons.
 
 \subsection{Code availability}
 Data for the interaction network analysis was generated using a simple simulation written with Python 3.6.3. Graphs were visualized using the networkx package~\cite{hagberg_exploring_2008}. The code for empirical analysis of evolved populations was written in C++ using the [REMOVED FOR DOUBLE-BLIND] library. Statistical analysis was performed using the R statistical computing language version 3.4.3~\cite{r_core_team_r:_2017} and graphs were made with the ggplot2 package~\cite{wickham_ggplot2:_2009}. All code for generating and analyzing the data presented in this paper is open source and available at [REMOVED FOR DOUBLE-BLIND]. 
 
 \section{Results and Discussion}
 
-\subsection{}
+\subsection{Interaction networks}
+There are striking differences among the interaction networks created by the different selection schemes (see Figure~\ref{interaction_network}). Most notably, as we predicted, far fewer individuals interact with each other under lexicase selection, likely due to the rigid population structure governing interactions. Additionally, all of these interactions are negative and acyclic. Eco-EA has far more interactions, presumably due to the fact that organisms are capable of occupying multiple niches at once. A side effect of this increased interconnectedness is that there are also some beneficial interactions; if $A$ competes with $B$ and $B$ competes with $C$, $A$ can help $C$ by suppressing $B$. Although these complex networks of interactions where once believed to produce a chaotic and unstable community [cite that May paper from the 50s], more recent evidence suggests that the presence of many weak interactions can be stabilizing [cite weak interaction effect paper]. Fitness sharing has still more interactions that Eco-EA. These interactions are more equal in strength, and a higher percentage of them are negative. Interestingly, the few positive interactions that do exist are paired with negative interactions in the opposite direction. 
+\begin{figure}
+\includegraphics[width=3.5in]{figs/interaction_networks.png}
+\caption{Interaction networks for the same community under three different selection schemes: lexicase selection, Eco-EA, and fitness sharing. Red edges indicate harmful interactions, blue edges indicate beneficial interactions. Edge width denotes interaction strength.}
+\label{interaction_network}
+\end{figure}
+
+\subsection{Phylogenetic analysis}
+
+\begin{figure}
+\includegraphics[width=3.5in]{figs/interaction_networks.png}
+\caption{Interaction networks for the same community under three different selection schemes: lexicase selection, Eco-EA, and fitness sharing. Red edges indicate harmful interactions, blue edges indicate beneficial interactions. Edge width denotes interaction strength.}
+\label{interaction_network}
+\end{figure}
 
 \section{Conclusions}
 
