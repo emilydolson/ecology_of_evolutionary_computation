@@ -1,0 +1,38 @@
+set email dolsonem@msu.edu
+set freq_email Crash
+set description box
+set mem_request 4
+set walltime 4
+set config_dir config
+set dest_dir /mnt/home/dolsonem/ecology_of_evolutionary_computation/data/round_4
+
+
+#1..30 lexicase time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#31..60 resource time ./evo_comp_ecology -SELECTION RESOURCE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -COST 1 ; qstat -f $PBS_JOBID
+
+#61..90 tournament time ./evo_comp_ecology -SELECTION TOURNAMENT -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#91..120 sharing_1 time ./evo_comp_ecology -SELECTION SHARING -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -SHARE_THRESHOLD 1; qstat -f $PBS_JOBID
+
+#121..150 sharing_10 time ./evo_comp_ecology -SELECTION SHARING -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -SHARE_THRESHOLD 10; qstat -f $PBS_JOBID
+
+#151..180 sharing_100 time ./evo_comp_ecology -SELECTION SHARING -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -SHARE_THRESHOLD 100; qstat -f $PBS_JOBID
+
+#181..210 lexicase_5 time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 5 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#211..240 lexicase_4 time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 4 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#241..270 lexicase_3 time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 3 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#271..300 lexicase_2 time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 2 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#301..330 lexicase_1 time ./evo_comp_ecology -SELECTION LEXICASE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 1 -POP_SIZE 500 -UPDATES 1000 ; qstat -f $PBS_JOBID
+
+#331..360 resource_.5 time ./evo_comp_ecology -SELECTION RESOURCE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -COST .5 ; qstat -f $PBS_JOBID
+
+#361..390 resource_1.5 time ./evo_comp_ecology -SELECTION RESOURCE -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -COST 1.5 ; qstat -f $PBS_JOBID
+
+391..420 sharing_50 time ./evo_comp_ecology -SELECTION SHARING -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -SHARE_THRESHOLD 50; qstat -f $PBS_JOBID
+
+421..450 sharing_5 time ./evo_comp_ecology -SELECTION SHARING -PROBLEM testcases/examples-collatz-numbers.csv -MUT_RATE 3 -SEED $seed -GENOME_SIZE 200 -N_TEST_CASES 100 -POP_SIZE 500 -UPDATES 1000 -SHARE_THRESHOLD 5; qstat -f $PBS_JOBID
