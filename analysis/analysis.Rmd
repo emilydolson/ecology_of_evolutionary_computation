@@ -1,7 +1,5 @@
 ---
 title: "evo_ecomp_ecology"
-author: "Emily Dolson"
-date: "February 2, 2018"
 output: html_document
 ---
 
@@ -11,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Read in the data
 
-```{r cars}
+```{r}
 library(ggplot2)
 library(readr)
 library(grid)
@@ -49,6 +47,7 @@ lexicase_othello$sel_param <- as.factor(lexicase_othello$sel_param)
 representative_othello <- subset(othello_data, (othello_data$sel_param == 1 | othello_data$selection != "sharing"))
 
 dow_data <- read_csv("~/repos/evo_comp_ecology/analysis/dow_data.csv")
+dow_data$selection <- as.factor(dow_data$selection)
 dow_data$id <- as.integer(dow_data$seed)
 sharing_dow <- subset(dow_data, selection=="sharing")
 sharing_dow$sel_param <- as.factor(sharing_dow$sel_param)
@@ -110,45 +109,32 @@ Okay, those are significantly different from each other.
 kruskal.test(phylogenetic_diversity ~ sel_param, data=share_collatz_endpoints)
 pairwise.wilcox.test(share_collatz_endpoints$phylogenetic_diversity, share_collatz_endpoints$sel_param, p.adjust.method = "bonferroni")
 ```
+
 10 is significantly different from everything else. So these orderings are actually different from each other.
 
+And what about the differences for the Dow chemical problem?
+
 ```{r}
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
+dow_endpoints <- subset(representative_dow, representative_dow$update==990)
+kruskal.test(phylogenetic_diversity ~ selection, data=dow_endpoints)
+pairwise.wilcox.test(dow_endpoints$phylogenetic_diversity, dow_endpoints$selection, p.adjust.method = "bonferroni")
+```
 
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
+Looks like lexicase is the only one that's significantly different from the others.
 
-  numPlots = length(plots)
+How about for lexicase?
 
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
+```{r}
+collatz_endpoints <- subset(representative_collatz, representative_collatz$update==990)
+kruskal.test(phylogenetic_diversity ~ selection, data=collatz_endpoints)
+pairwise.wilcox.test(collatz_endpoints$phylogenetic_diversity, collatz_endpoints$selection, p.adjust.method = "bonferroni")
+```
 
- if (numPlots==1) {
-    print(plots[[1]])
+Eco-EA Lexicase are different from the others but not each other.
 
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+Let's make a bunch of violin plots to check how various variables behave.
 
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
+```{r}
 ggplot(data=share_collatz_endpoints) + geom_violin(aes(x=sel_param, y=mean_pairwise_distance, fill=sel_param)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Sharing threshold") + scale_y_continuous("Mean pairwise distance")
 ggsave("../figs/sharing_pairwise_dist.png")
 
@@ -161,8 +147,6 @@ ggsave("../figs/phylo_all.png")
 ggplot(data=subset(representative_collatz, representative_collatz$update == 990)) + geom_violin(aes(x=selection, y=phenotypic_entropy, fill=selection)) + theme_classic() +theme(legend.position = "none") + scale_x_discrete("Selection scheme") + scale_y_continuous("Phylogenetic diversity")
 ggsave("../figs/pheno_all.png")
 
-p1 <- 
-
 
 p2 <- ggplot(data=representative_collatz) + stat_summary(aes(x=update, y=phenotypic_entropy, group=selection, color=selection, fill=selection), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic diversity") + theme(axis.title = element_text(size=18), axis.text = element_text(size=14), legend.text = element_text(size=14), legend.title = element_blank(), legend.position = "none") + scale_color_discrete(labels=c("Lexicase", "Eco-EA", "Sharing", "Tournament")) + scale_fill_discrete(guide="none")
 
@@ -171,34 +155,10 @@ p3 <- ggplot(data=representative_square) + stat_summary(aes(x=update, y=phylogen
 
 p4 <- ggplot(data=representative_square) + stat_summary(aes(x=update, y=phenotypic_entropy, group=selection, color=selection, fill=selection), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic diversity") + theme(axis.title = element_text(size=18), axis.text = element_text(size=14), legend.text = element_text(size=14), legend.title = element_blank(), legend.position = "top") + scale_color_discrete(labels=c("Lexicase", "Eco-EA", "Sharing", "Tournament")) + scale_fill_discrete(guide="none")
 
-multiplot(p1,p2,p3,p4)
-
-ggsave("../figs/pheno_over_time.png", width = 6, height = 5)
-
 ```
-```{r}
 
-representative_square$problem <- "Squares"
-representative_collatz$problem <- "Collatz"
-representative_dow$problem <- "Dow"
+Final code for phylogenetic and phenotypic diversity over time across problems:
 
-rep_all <- rbind(representative_collatz,representative_square)
-rep_all <- rbind(rep_all, representative_dow)
-
-rep_all$problem <- as.factor(rep_all$problem)
-rep_all$problem <- relevel(rep_all$problem, "Squares")
-
-
-p2 <- ggplot(data=rep_all) + stat_summary(aes(x=update, y=phylogenetic_diversity, group=selection, color=selection, fill=selection), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("") + scale_y_continuous("Phylogenetic\ndiversity (1000s)", labels=function(x){x/1000}) + theme(axis.title = element_text(size=16), axis.text = element_text(size=14), legend.text = element_text(size=14), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=14)) + scale_color_discrete(labels=c("Lexicase", "Eco-EA", "Sharing", "Tournament")) + scale_fill_discrete(guide="none") + facet_wrap(~problem)
-p3 <- ggplot(data=rep_all) + stat_summary(aes(x=update, y=phenotypic_entropy, group=selection, color=selection, fill=selection), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic\ndiversity") + theme(axis.title = element_text(size=16), axis.text = element_text(size=14), legend.text = element_text(size=14), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=14)) + scale_color_discrete(labels=c("Lexicase", "Eco-EA", "Sharing", "Tournament")) + scale_fill_discrete(guide="none") + facet_wrap(~problem)
-
-g <- rbind(g2, g3, size = "first")
-g$widths <- unit.pmax(g2$widths, g3$widths)
-grid.newpage()
-grid.draw(g)
-
-
-```
 ```{r}
 pleg <- ggplot(data=rep_all) + stat_summary(aes(x=update, y=phylogenetic_diversity, group=selection, color=selection, fill=selection), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("") + scale_y_continuous("Phylogenetic\ndiversity") + theme(axis.title = element_text(size=18), axis.text = element_text(size=12), legend.text = element_text(size=18), legend.title = element_blank(), legend.position = "bottom", strip.text = element_text(size=18)) + scale_color_discrete(labels=c("Lexicase", "Eco-EA", "Sharing", "Tournament")) + scale_fill_discrete(guide="none") + facet_wrap(~problem)
 
@@ -214,14 +174,14 @@ ggsave("../figs/time_all.png", width = 10, height=6, scale=.8)
 
 ```
 
+Final code for sharing thresholds over time:
+
 ```{r}
-
-
 colnames(sharing_collatz)[32] = "Threshold"
 legplot <- ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phenotypic_entropy, group=Threshold, color=Threshold, fill=Threshold), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic diversity") + theme(axis.title = element_text(size=20), axis.text = element_text(size=12), legend.title = element_text(size=18), legend.text = element_text(size=18), legend.position = "bottom", strip.text = element_text(size=20)) + scale_color_discrete("Sharing theshold") + scale_fill_discrete(guide="none")
 leg <- get_legend(legplot)
-share_p1 <- ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phenotypic_entropy, group=Threshold, color=Threshold, fill=Threshold), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic diversity") + theme(axis.title = element_text(size=22), axis.text = element_text(size=14), legend.text = element_text(size=20), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=20))
-share_p2 <- ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phylogenetic_diversity, group=Threshold, color=Threshold, fill=Threshold), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phylogenetic diversity\n(1000s)", labels=function(d){d/1000}) + theme(axis.title = element_text(size=22), axis.text = element_text(size=14), legend.text = element_text(size=20), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=20))
+share_p1 <- ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phenotypic_entropy, group=Threshold, color=Threshold, fill=Threshold), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phenotypic\ndiversity") + theme(axis.title = element_text(size=22), axis.text = element_text(size=14), legend.text = element_text(size=20), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=20))
+share_p2 <- ggplot(data=sharing_collatz) + stat_summary(aes(x=update, y=phylogenetic_diversity, group=Threshold, color=Threshold, fill=Threshold), fun.data ="mean_cl_boot", geom = "smooth") + theme_classic() + scale_x_continuous("Generation") + scale_y_continuous("Phylogenetic\ndiversity (1000s)", labels=function(d){d/1000}) + theme(axis.title = element_text(size=22), axis.text = element_text(size=14), legend.text = element_text(size=20), legend.title = element_blank(), legend.position = "none", strip.text = element_text(size=20))
 
 p_row <- plot_grid(share_p1, share_p2, align = "h")
 plot_grid(p_row, leg, nrow = 2, rel_heights = c(1,.08))
