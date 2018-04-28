@@ -3,8 +3,9 @@
 #include "tools/Random.h"
 #include "tools/math.h"
 #include "tools/set_utils.h"
-#include "Evo/World.h"
-#include "Evo/Resource.h"
+#include "tools/stats.h"
+#include "Evolve/World.h"
+#include "Evolve/Resource.h"
 #include "hardware/AvidaGP.h"
 #include "TestcaseSet.h"
 #include "data/DataNode.h"
@@ -356,6 +357,7 @@ public:
         if (SELECTION == "TOURNAMENT" || SELECTION == "SHARING") {
             TournamentSelect(*this, TOURNAMENT_SIZE, POP_SIZE-1);
         } else if (SELECTION == "LEXICASE") {
+	  std::cout << "lex"<<std::endl;
             emp::LexicaseSelect(*this, fit_set, POP_SIZE-1);
         } else if (SELECTION == "RESOURCE") {
             emp::ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST, true);
