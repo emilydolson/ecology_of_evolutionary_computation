@@ -1,2 +1,7 @@
 numpy
 nbinteract
+pandas
+seaborn
+matplotlibscipy
+ipywidgets
+networkx
