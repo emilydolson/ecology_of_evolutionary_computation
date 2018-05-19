@@ -2,6 +2,7 @@ numpy
 nbinteract
 pandas
 seaborn
-matplotlibscipy
+matplotlib
+scipy
 ipywidgets
 networkx
