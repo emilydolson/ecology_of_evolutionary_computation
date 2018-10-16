@@ -1,5 +1,5 @@
 %%%% Proceedings format for most of ACM conferences (with the exceptions listed below) and all ICPS volumes.
-\documentclass[sigconf]{acmart}
+\documentclass[journal]{IEEEtran}
 %%%% As of March 2017, [siggraph] is no longer used. Please use sigconf (above) for SIGGRAPH conferences.
 
 %%%% Proceedings format for SIGPLAN conferences 
@@ -11,41 +11,37 @@
 %%%% To use the SIGCHI extended abstract template, please visit
 % https://www.overleaf.com/read/zzzfqvkmrfzn
 
-
+\usepackage{cite}
 \usepackage{booktabs} % For formal tables
-
-
-% Copyright
-%\setcopyright{none}
-%\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-\setcopyright{rightsretained}
-%\setcopyright{usgov}
-%\setcopyright{usgovmixed}
-%\setcopyright{cagov}
-%\setcopyright{cagovmixed}
-
-
-% DOI
-\acmDOI{10.475/123_4}
-
-% ISBN
-\acmISBN{123-4567-24-567/08/06}
-
-%Conference
-\acmConference[GECCO '18]{the Genetic and Evolutionary Computation Conference 2018}{July 15--19, 2018}{Kyoto, Japan}
-\acmYear{2018}
-\copyrightyear{2018}
-
-
-\acmArticle{4}
-\acmPrice{15.00}
-
-% These commands are optional
-%\acmBooktitle{Transactions of the ACM Woodstock conference}
-%\editor{Jennifer B. Sartor}
-%\editor{Theo D'Hondt}
-%\editor{Wolfgang De Meuter}
+\usepackage{amsmath}
+%\usepackage{natbib}
+\ifCLASSINFOpdf
+  \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation
+% can be obtained at: 
+% http://www.ctan.org/pkg/graphicx
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found at:
+% http://www.ctan.org/pkg/epslatex
+%
 
 
 \begin{document}
@@ -57,33 +53,38 @@
   %\texttt{acmart.pdf} document}
 
 
-% \author{Emily Dolson}
-% %\authornote{}
-% \orcid{0000-0001-8616-4898}
-% \affiliation{%
-%   \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
-%   \streetaddress{567 Wilson Road Room 1441}
-%   \city{East Lansing} 
-%   \state{Michigan} 
-%   \postcode{48823}
-% }
-% \email{dolsonem@msu.edu}
+\author{Emily~Dolson
+		and~Charles~Ofria\thanks{Both authors are with the Department of Computer Science and Engineering, the Ecology, Evolutionary Biology, and Behavior program, and the BEACON Center for Evolution in Action at Michigan State University.}}
+%\authornote{}
+%\orcid{0000-0001-8616-4898}
+%\affiliation{%
+%  \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
+%  \streetaddress{567 Wilson Road Room 1441}
+%  \city{East Lansing} 
+%  \state{Michigan} 
+%  \postcode{48823}
+%}
+%\email{dolsonem@msu.edu}
 
-% \author{Charles Ofria}
-% %\authornote{}
-% \orcid{0000-0003-2924-1732}
-% \affiliation{%
-%   \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
-%   \streetaddress{567 Wilson Road Room 1441}
-%   \city{East Lansing} 
-%   \state{Michigan} 
-%   \postcode{48823}
-% }
-% \email{ofria@msu.edu}
+\markboth{IEEE Transaction on Evolutionary Computation}%
+{Dolson and Ofria: Ecological Theory Provides Insights about Evolutionary Computation}
+
+%\author{}
+%\authornote{}
+%\orcid{0000-0003-2924-1732}
+%\affiliation{%
+%  \institution{BEACON Center for the Study of Evolution in Action, Department of Computer Science and Engineering, Program in Ecology, Evolutionary Biology and Behavior, Michigan State University}
+%  \streetaddress{567 Wilson Road Room 1441}
+%  \city{East Lansing} 
+%  \state{Michigan} 
+%  \postcode{48823}
+%}
+%\email{ofria@msu.edu}
 
 
 % % The default list of authors is too long for headers.
 % \renewcommand{\shortauthors}{E. Dolson and C. Ofria}
+\maketitle
 
 
 \begin{abstract}
@@ -96,39 +97,14 @@ Evolutionary algorithms often incorporate ecological concepts to help maintain d
 % http://dl.acm.org/ccs.cfm
 % Please copy and paste the code instead of the example below. 
 %
-\begin{CCSXML}
-<ccs2012>
-<concept>
-<concept_id>10010147.10010257.10010293.10011809.10011810</concept_id>
-<concept_desc>Computing methodologies~Artificial life</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10010147.10010257.10010293.10011809.10011813</concept_id>
-<concept_desc>Computing methodologies~Genetic programming</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10010405.10010444.10010087.10010091</concept_id>
-<concept_desc>Applied computing~Biological networks</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
-\end{CCSXML}
 
-\ccsdesc[500]{Computing methodologies~Artificial life}
-\ccsdesc[500]{Computing methodologies~Genetic programming}
-\ccsdesc[500]{Applied computing~Biological networks}
+%\keywords{Diversity, diversity maintenance, fitness sharing, lexicase selection, Eco-EA, ecology, ecological theory, eco-evolutionary dynamics, phylogenetic analysis}
 
-
-\keywords{Diversity, diversity maintenance, fitness sharing, lexicase selection, Eco-EA, ecology, ecological theory, eco-evolutionary dynamics, phylogenetic analysis}
-
-
-\maketitle
+\IEEEpeerreviewmaketitle
 
 \input{samplebody-conf}
 
-\bibliographystyle{ACM-Reference-Format}
+\bibliographystyle{IEEEtran}
 \bibliography{Zotero} 
 
 \end{document}
