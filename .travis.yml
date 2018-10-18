@@ -1,12 +1,13 @@
 language: cpp
 compiler: clang++-6.0
-os: linux
-  addons:
-    apt:
-      sources:
-        - llvm-toolchain-trusty-6.0
-      packages:
-        - clang-6.0
+include:
+  - os: linux
+    addons:
+      apt:
+        sources:
+          - llvm-toolchain-trusty-6.0
+        packages:
+          - clang-6.0
 before_script:
   - cd ..
   - git clone https://github.com/emilydolson/Empirical.git
