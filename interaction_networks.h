@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <map>
+#include <limits>
 
 #include "web/init.h"
 
@@ -39,6 +40,19 @@ constexpr auto DEFAULT{MakeAttrs(SigmaShare(8.0),
 using all_attrs = emp::tools::Attrs<typename SigmaShare::value_t<double>, typename Alpha::value_t<double>, 
                         typename Cost::value_t<double>, typename Cf::value_t<double>,
                         typename NicheWidth::value_t<double>, typename MaxScore::value_t<double>>;
+
+
+// from https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
+template<class T>
+typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
+    almost_equal(T x, T y, int ulp)
+{
+    // the machine epsilon has to be scaled to the magnitude of the values used
+    // and multiplied by the desired precision in ULPs (units in the last place)
+    return std::abs(x-y) <= std::numeric_limits<T>::epsilon() * std::abs(x+y) * ulp
+    // unless the result is subnormal
+           || std::abs(x-y) < std::numeric_limits<T>::min();
+}
 
 emp::vector<org_t> make_pop(emp::Random & r, 
                                         int size = 10, 
@@ -143,30 +157,32 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> sharing_fitness = [](em
             } 
         }
 
+        // Don't worry, niche_count will always be at least one because each individual
+        // increases its own niche count by 1
         base_fit_map[org1] = emp::Sum(org1) / niche_count;
     }
 
     // Now that we've adjusted for sharing, calculate biological fitness
     for (org_t & org : pop) {
         double less = 0.0;
-        double equal = 0.0;
+        double equal = -1; // Org will be equal to itself
         double greater = 0.0;
 
         for (org_t & org2 : pop) {
             if (base_fit_map[org2] < base_fit_map[org]) {
                 less++;
-            } else if (base_fit_map[org2] == base_fit_map[org]) {
+            } else if (almost_equal(base_fit_map[org2], base_fit_map[org], 10)) {
                 equal++;
             } else {
                 greater++;
             }
         }
 
-        double p_less = less/(int)pop.size();
-        double p_equal = equal/(int)pop.size();
+        double p_less = less/((int)pop.size() - 1);
+        double p_equal = equal/((int)pop.size() - 1);
         // double p_greater = greater/(int)pop.size();
-
-        fit_map[org] = (2.0/(int)pop.size() * p_less) + (1.0/(int)pop.size() * p_equal);
+        
+        fit_map[org] = (2*p_less + p_equal) / (int)pop.size();
     }
 
     return fit_map;    
@@ -208,16 +224,20 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> eco_ea_fitness = [](emp
         }
     }
 
-    for (org_t & org : pop) {
+    for (org_t & org : emp::RemoveDuplicates(pop)) {
         int wins = 0;
         int ties = -1; // org will tie with itself
         double fit = base_fit_map[org];
 
-        for (auto & org_fit_pair : base_fit_map) {
-            if (fit > org_fit_pair.second) {
+        for (org_t & org2 : pop) {
+            // std::cout << fit << ' ' << base_fit_map[org2] << std::endl;
+            if (fit > base_fit_map[org2]) {
+                // std::cout << "win" << std::endl;
                 wins++;
-            } else if (fit == org_fit_pair.second) {
+            } else if (almost_equal(fit, base_fit_map[org2], 10)) {
+                // std::cout << "tie " << ties << std::endl;
                 ties++;
+                // std::cout << ties << std::endl;
             }
         }
 

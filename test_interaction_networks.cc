@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include "interaction_networks.h"
+Controller t;
 
 TEST_CASE("MakePop", "[helpers]") {
     emp::Random r;
@@ -77,11 +78,53 @@ TEST_CASE("Lexicase", "[selection_schemes]") {
 
 }
 
-TEST_CASE("Controller", "[controller]") {
-    Controller c;
-    c.SetPopSize(50);
-    CHECK(c.GetPopSize() == 50);
-    CHECK(c.GetPop().size() == 10);
-    c.Regenerate();
-    CHECK(c.GetPop().size() == 50);
+TEST_CASE("Fitness sharing", "[selection_schemes]") {
+    emp::vector<org_t> pop = emp::vector<org_t>({{3,3,3}, {3, 3, 3}, {3,3,3}});
+    all_attrs settings = DEFAULT;
+    fit_map_t fits = sharing_fitness(pop, settings);
+    CHECK(fits[{3,3,3}] == Approx(.3333333));
+
+    pop = emp::vector<org_t>({{3,1,2,1,1}, {1, 3, 2,1,1}, {2,3,1,1,1}});
+    fits = sharing_fitness(pop, DEFAULT);
+    CHECK(fits[{3,1,2,1,1}] == Approx(.666666));
+    CHECK(fits[{1,3,2,1,1}] == Approx(.333333));
+    CHECK(fits[{2,3,1,1,1}] == Approx(0));
+
+    pop = emp::vector<org_t>({{10,1}, {1, 10}, {1,1}});
+    fits = sharing_fitness(pop, DEFAULT);
+    CHECK(fits[{10,1}] == Approx(.5));
+    CHECK(fits[{1,10}] == Approx(.5));
+    CHECK(fits[{1,1}] == Approx(0));
+
 }
+
+TEST_CASE("Eco-EA", "[selection_schemes]") {
+    emp::vector<org_t> pop = emp::vector<org_t>({{3,3,3}, {3, 3, 3}, {3,3,3}});
+    all_attrs settings = DEFAULT;
+    fit_map_t fits = eco_ea_fitness(pop, settings);
+    CHECK(fits[{3,3,3}] == Approx(.3333333));
+
+    pop = emp::vector<org_t>({{3,1,2,1,1}, {1, 3, 2,1,1}, {2,3,1,1,1}});
+    fits = eco_ea_fitness(pop, DEFAULT);
+    CHECK(fits[{3,1,2,1,1}] == Approx(.666666));
+    CHECK(fits[{1,3,2,1,1}] == Approx(.1666666));
+    CHECK(fits[{2,3,1,1,1}] == Approx(.16666667));
+
+    pop = emp::vector<org_t>({{10,1,2,1,1}, {1, 3, 2,1,1}, {2,3,1,1,1}, {2,1,1,1,1}});
+    fits = eco_ea_fitness(pop, DEFAULT);
+    CHECK(fits[{10,1,2,1,1}] == Approx(.5));
+    CHECK(fits[{1,3,2,1,1}] == Approx(0.0833335));
+    CHECK(fits[{2,3,1,1,1}] == Approx(0.0833335));
+    CHECK(fits[{2,1,1,1,1}] == Approx(.3333333));
+
+}
+
+
+// TEST_CASE("Controller", "[controller]") {
+//     Controller c;
+//     c.SetPopSize(50);
+//     CHECK(c.GetPopSize() == 50);
+//     CHECK(c.GetPop().size() == 10);
+//     c.Regenerate();
+//     CHECK(c.GetPop().size() == 50);
+// }
