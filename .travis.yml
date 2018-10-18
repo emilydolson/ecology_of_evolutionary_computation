@@ -1,5 +1,4 @@
 language: cpp
-compiler: g++
 include:
   - os: linux
     addons:
