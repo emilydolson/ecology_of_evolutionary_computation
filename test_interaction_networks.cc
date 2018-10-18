@@ -77,3 +77,11 @@ TEST_CASE("Lexicase", "[selection_schemes]") {
 
 }
 
+TEST_CASE("Controller", "[controller]") {
+    Controller c;
+    c.SetPopSize(50);
+    CHECK(c.GetPopSize() == 50);
+    CHECK(c.GetPop.size() == 10);
+    c.Regenerate();
+    CHECK(c.GetPop.size() == 50);
+}
