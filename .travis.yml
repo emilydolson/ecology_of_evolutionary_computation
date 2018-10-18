@@ -1,16 +1,8 @@
 language: cpp
-compiler: clang++-6.0
-include:
-  - os: linux
-    addons:
-      apt:
-        sources:
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
+compiler: g++
 before_script:
   - cd ..
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
-script: make test CXX=clang++-6.0
+script: make test CXX=g++
