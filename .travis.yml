@@ -15,6 +15,7 @@ before_install:
     - eval "${MATRIX_EVAL}"
 before_script:
   - cd ..
+  - git clone https://github.com/ryanhaining/cppitertools.git
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
