@@ -6,7 +6,8 @@ EMP_DIR := ../Empirical/source
 CFLAGS_all := -Wall -Wno-unused-function -std=c++1z -I$(EMP_DIR)/ -I../cppitertools
 
 # Native compiler information
-CXX_nat := clang++-6.0
+CXX := clang++-6.0
+CXX_nat := $(CXX)
 CFLAGS_nat := -O3 -DNDEBUG $(CFLAGS_all)
 CFLAGS_nat_debug := -g $(CFLAGS_all)
 
