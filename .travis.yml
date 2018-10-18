@@ -13,10 +13,19 @@ matrix:
 
 before_install:
     - eval "${MATRIX_EVAL}"
+python: 
+  - '3.5'
+install:
+  - pip install --user codecov
 before_script:
   - cd ..
   - git clone https://github.com/ryanhaining/cppitertools.git
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
-script: make test CXX=g++-7
+script: 
+  - make test CXX=g++-7
+  - gcov test_interaction_networks.cc
+  - codecov
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

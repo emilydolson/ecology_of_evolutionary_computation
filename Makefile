@@ -9,7 +9,7 @@ CFLAGS_all := -Wall -Wno-unused-function -std=c++1z -I$(EMP_DIR)/ -I../cppiterto
 CXX := clang++-6.0
 CXX_nat := $(CXX)
 CFLAGS_nat := -O3 -DNDEBUG $(CFLAGS_all)
-CFLAGS_nat_debug := -g $(CFLAGS_all)
+CFLAGS_nat_debug := -fprofile-arcs -ftest-coverage -g $(CFLAGS_all)
 
 # Emscripten compiler information
 CXX_web := emcc
@@ -58,7 +58,7 @@ test: test_interaction_networks.cc
 
 
 clean:
-	rm -f $(PROJECT) web/$(PROJECT).js *.js.map *~ source/*.o
+	rm -f $(PROJECT) web/$(PROJECT).js *.js.map *~ source/*.o test
 
 # Debugging information
 print-%: ; @echo '$(subst ','\'',$*=$($*))'
