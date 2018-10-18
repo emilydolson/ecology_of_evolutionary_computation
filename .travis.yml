@@ -1,0 +1,6 @@
+language: cpp
+compiler: clang
+before_script:
+  - git clone https://github.com/emilydolson/Empirical.git
+  - cd Empirical && git checkout OEE
+script: make test
