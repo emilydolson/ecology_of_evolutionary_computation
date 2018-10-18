@@ -51,6 +51,10 @@ interaction_networks.js: interaction_networks-web.cc
 debug-interaction_networks.js: interaction_networks-web.cc
 	$(CXX_web) $(CFLAGS_web_debug) interaction_networks-web.cc -o web/interaction_networks.js
 
+test: test_interaction_networks.cc
+	$(CXX_nat) $(CFLAGS_nat_debug) test_interaction_networks.cc -o test
+	./test
+
 
 clean:
 	rm -f $(PROJECT) web/$(PROJECT).js *.js.map *~ source/*.o
