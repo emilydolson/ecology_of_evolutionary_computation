@@ -16,7 +16,7 @@ TEST_CASE("FindHighest", "[helpers]") {
     CHECK(highest.size() == 1);
     emp::vector<int> res = highest[0];
 
-    for (int i = 0; i < res.size(); i++) {
+    for (size_t i = 0; i < res.size(); i++) {
         CHECK( res[i] == v[1][i]);
     }
 
@@ -24,7 +24,7 @@ TEST_CASE("FindHighest", "[helpers]") {
     CHECK(highest.size() == 1);
     res = highest[0];
 
-    for (int i = 0; i < res.size(); i++) {
+    for (size_t i = 0; i < res.size(); i++) {
         CHECK( res[i] == v[2][i]);
     }
 

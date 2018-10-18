@@ -29,12 +29,12 @@ DEFINE_ATTR(Cf);
 DEFINE_ATTR(NicheWidth);
 DEFINE_ATTR(MaxScore);
 
-constexpr auto DEFAULT{MakeAttrs(SigmaShare(8),
-                                 Alpha(1),
-                                 Cost(1),
+constexpr auto DEFAULT{MakeAttrs(SigmaShare(8.0),
+                                 Alpha(1.0),
+                                 Cost(1.0),
                                  Cf(.0025),                                 
-                                 NicheWidth(3),
-                                 MaxScore(10))};
+                                 NicheWidth(3.0),
+                                 MaxScore(10.0))};
 
 using all_attrs = emp::tools::Attrs<typename SigmaShare::value_t<double>, typename Alpha::value_t<double>, 
                         typename Cost::value_t<double>, typename Cf::value_t<double>,
