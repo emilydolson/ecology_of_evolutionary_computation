@@ -1,8 +1,16 @@
 language: cpp
 compiler: g++
+include:
+  - os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
 before_script:
   - cd ..
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
-script: make test CXX=g++
+script: make test CXX=g++-7
