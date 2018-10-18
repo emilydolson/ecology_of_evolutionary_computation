@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 
+#include "web/init.h"
+
 #include "base/vector.h"
 #include "base/assert.h"
 #include "tools/Random.h"
@@ -59,6 +61,7 @@ emp::vector<org_t> FindHighest(emp::vector<org_t> & pop, int axis) {
 
     for (org_t & org : pop) {
         if (org[axis] > best) {
+            best = org[axis];
             winners.resize(0);
             winners.push_back(org);
         } else if (org[axis] == best) {
@@ -78,26 +81,17 @@ void TraverseDecisionTree(fit_map_t & fit_map, emp::vector<org_t> & pop, emp::ve
     }
 
     for (int ax : axes) {
-        org_t best = emp::vector<int>(ax+1, 0);
-        bool tie = false;
-        for (org_t & org : pop) {
-            if (org[ax] > best[ax]) {
-                best = org;
-                tie = false;
-            } else if (org[ax] == best[ax]) {
-                tie = true;
-            }
-        }
-        if (!tie) {
-            fit_map[best] += emp::Factorial(axes.size() - 1);
-        } else {
+        emp::vector<org_t> winners = FindHighest(pop, ax);
+        if (winners.size() == 1) { // Not a tie
+            fit_map[winners[0]] += (double)emp::Factorial(axes.size() - 1);
+        } else { // tie
             emp::vector<int> next_axes;
             for (int new_ax : axes) {
                 if (new_ax != ax) {
                     next_axes.push_back(new_ax);
                 }
             }
-            TraverseDecisionTree(fit_map, pop, next_axes);
+            TraverseDecisionTree(fit_map, winners, next_axes);
         }
     }
 }
@@ -113,42 +107,13 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> lexicase_fitness = [](e
         fit_map[org] = 0.0;
     }
 
-    // Iterate over all possible orderings of fitness functions
-    // and count up the number that each org wins
-    // for (auto order : iter::permutations(emp::NRange(0, (int)n_funs))) {
-    //     emp::vector<org_t> remaining = pop;
-
-    //     // Find best individuals for each axis
-    //     for (int axis : order) {
-    //         org_t best(n_funs, 0);
-    //         emp::vector<org_t> winners;
-
-    //         for (org_t & org : remaining) {
-    //             if (org[axis] > best[axis]) {
-    //                 winners.resize(0);
-    //                 winners.push_back(org);
-    //                 best = org;
-    //             } else if (org[axis] == best[axis]) {
-    //                 winners.push_back(org);
-    //             }
-    //         }
-
-    //         remaining = winners;
-    //         if (remaining.size() == 1) {
-    //             break;
-    //         }
-    //     }
-
-    //     for (org_t & org : remaining) {
-    //         fit_map[org] += 1.0/remaining.size(); // handle ties
-    //     }
-    // }
-
     emp::vector<org_t> de_dup_pop = emp::RemoveDuplicates(pop);
     TraverseDecisionTree(fit_map, de_dup_pop, emp::NRange(0, (int)n_funs));
 
-    for (org_t & org : pop) {
-        fit_map[org] /= emp::Factorial(n_funs); // convert to proportion of "islands"
+    for (org_t & org : de_dup_pop) {
+        fit_map[org] /= emp::Count(pop, org);
+        fit_map[org] /= (double)emp::Factorial(n_funs); // convert to proportion of "islands"
+
     }
 
     return fit_map;
