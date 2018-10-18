@@ -1,15 +1,21 @@
-language: cpp
-include:
-  - os: linux
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
 before_script:
   - cd ..
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
-script: make test CXX=g++-7
+script: make test
