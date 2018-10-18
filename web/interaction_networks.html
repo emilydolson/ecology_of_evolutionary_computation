@@ -42,15 +42,24 @@
 
 <div id="emp_base">
     <div class="container-fluid">
-            <div class="row">
-            <div class="col">
+        <div class="row justify-content-center">
+            <div class="col col-md-auto align-self-center">
                 <div id="div_controls"></div>
             </div>
-            <div class="row">
+            <div class="col col-md-auto align-self-center justify-content-center">
                 <div id="graphs">
-                    <svg id="sharing_graph" width=300 height=300></svg>
-                    <svg id="eco_ea_graph" width=300 height=300></svg>
-                    <svg id="lexicase_graph" width=300 height=300></svg>
+                    <svg id="sharing_graph_frame" width=350 height=400>
+                        <g id="sharing_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Fitness sharing</text>
+                    </svg>
+                    <svg id="eco_ea_graph_frame" width=350 height=400>
+                        <g id="eco_ea_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Eco-EA</text>
+                    </svg>
+                    <svg id="lexicase_graph_frame" width=350 height=400>
+                        <g id="lexicase_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Lexicase</text>
+                    </svg>
                 </div>
             </div>
         </div>
