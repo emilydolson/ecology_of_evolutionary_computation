@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #include "interaction_networks.h"
-// Controller t;
+Controller t;
 
 TEST_CASE("MakePop", "[helpers]") {
     emp::Random r;
@@ -154,29 +154,29 @@ TEST_CASE("Calc competition", "[helpers]") {
     CHECK(g.GetWeight(0,1) == -1);
 }
 
-// TEST_CASE("Controller", "[controller]") {
-//     Controller c;
-//     c.SetPopSize(50);
-//     CHECK(c.GetPopSize() == 50);
-//     CHECK(c.GetPop().size() == 10);
-//     c.Regenerate();
-//     CHECK(c.GetPop().size() == 50);
+TEST_CASE("Controller", "[controller]") {
+    Controller c;
+    c.SetPopSize(50);
+    CHECK(c.GetPopSize() == 50);
+    CHECK(c.GetPop().size() == 10);
+    c.Regenerate();
+    CHECK(c.GetPop().size() == 50);
 
-//     c.SetNTraits(9);
-//     c.SetSigmaShare(3);
-//     c.SetAlpha(.1);
-//     c.SetCost(2);
-//     c.SetCf(.01);
-//     c.SetNicheWidth(4);
-//     c.SetMaxScore(100);
+    c.SetNTraits(9);
+    c.SetSigmaShare(3);
+    c.SetAlpha(.1);
+    c.SetCost(2);
+    c.SetCf(.01);
+    c.SetNicheWidth(4);
+    c.SetMaxScore(100);
 
-//     c.Regenerate();
+    c.Regenerate();
 
-//     CHECK(c.GetPop()[0].size() == 9);
-//     CHECK(c.GetSigmaShare() == 3);
-//     CHECK(Alpha::Get(c.settings) == .1);
-//     CHECK(Cost::Get(c.settings) == 2);
-//     CHECK(Cf::Get(c.settings) == .01);
-//     CHECK(NicheWidth::Get(c.settings) == 4);
-//     CHECK(MaxScore::Get(c.settings) == 100);
-// }
+    CHECK(c.GetPop()[0].size() == 9);
+    CHECK(c.GetSigmaShare() == 3);
+    CHECK(Alpha::Get(c.settings) == .1);
+    CHECK(Cost::Get(c.settings) == 2);
+    CHECK(Cf::Get(c.settings) == .01);
+    CHECK(NicheWidth::Get(c.settings) == 4);
+    CHECK(MaxScore::Get(c.settings) == 100);
+}
