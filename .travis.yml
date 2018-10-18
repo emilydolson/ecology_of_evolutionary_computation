@@ -18,4 +18,4 @@ before_script:
   - git clone https://github.com/emilydolson/Empirical.git
   - cd Empirical && git checkout OEE
   - cd ../ecology_of_evolutionary_computation
-script: make test
+script: make test CXX=g++-7
