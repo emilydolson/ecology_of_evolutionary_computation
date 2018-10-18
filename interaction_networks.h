@@ -267,9 +267,10 @@ emp::WeightedGraph calc_competition(emp::vector<org_t> pop,
         fit_map_t new_fits = fit_fun(curr, attrs);
         for (size_t j = 0; j < pop.size(); j++ ) {
             if (i == j) {continue;}
-            // std::cout << fitnesses[curr[j]] << " " << new_fits[curr[j]] << " " << fitnesses[curr[j]] - new_fits[curr[j]]<< std::endl;
             double effect = fitnesses[curr[j]] - new_fits[curr[j]];
-            effects.AddEdge(i, j, effect);
+            if (effect != 0) {
+                effects.AddEdge(i, j, effect);
+            }
             // std::cout << effect << std::endl;
         }
     }

@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #include "interaction_networks.h"
-Controller t;
+// Controller t;
 
 TEST_CASE("MakePop", "[helpers]") {
     emp::Random r;
@@ -119,6 +119,40 @@ TEST_CASE("Eco-EA", "[selection_schemes]") {
 
 }
 
+TEST_CASE("Calc competition", "[helpers]") {
+    emp::vector<org_t> pop = emp::vector<org_t>({{1,3,1}, {3, 1, 1}, {1,1,3}});
+    // all_attrs settings = DEFAULT;
+    std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> test_fun = [](emp::vector<org_t> & pop, all_attrs attrs=DEFAULT) {
+        fit_map_t base_fit_map;
+        for (org_t & org : pop) {
+            base_fit_map[org] = 1.0;
+        }
+        return base_fit_map;
+    };
+
+    emp::WeightedGraph g = calc_competition(pop, test_fun);
+    auto weights = g.GetWeights();
+    for (auto vec : weights) {
+        for (auto val : vec) {
+            CHECK(val == 0); 
+        }
+    }
+
+    test_fun = [](emp::vector<org_t> & pop, all_attrs attrs=DEFAULT) {
+        fit_map_t base_fit_map;
+        for (org_t & org : pop) {
+            base_fit_map[org] = 1.0;
+        }
+
+        if (emp::Has(pop, {1,3,1})) {
+            base_fit_map[{3,1,1}] = 0;
+        }
+        return base_fit_map;
+    };
+
+    g = calc_competition(pop, test_fun);
+    CHECK(g.GetWeight(0,1) == -1);
+}
 
 // TEST_CASE("Controller", "[controller]") {
 //     Controller c;
@@ -127,4 +161,22 @@ TEST_CASE("Eco-EA", "[selection_schemes]") {
 //     CHECK(c.GetPop().size() == 10);
 //     c.Regenerate();
 //     CHECK(c.GetPop().size() == 50);
+
+//     c.SetNTraits(9);
+//     c.SetSigmaShare(3);
+//     c.SetAlpha(.1);
+//     c.SetCost(2);
+//     c.SetCf(.01);
+//     c.SetNicheWidth(4);
+//     c.SetMaxScore(100);
+
+//     c.Regenerate();
+
+//     CHECK(c.GetPop()[0].size() == 9);
+//     CHECK(c.GetSigmaShare() == 3);
+//     CHECK(Alpha::Get(c.settings) == .1);
+//     CHECK(Cost::Get(c.settings) == 2);
+//     CHECK(Cf::Get(c.settings) == .01);
+//     CHECK(NicheWidth::Get(c.settings) == 4);
+//     CHECK(MaxScore::Get(c.settings) == 100);
 // }
