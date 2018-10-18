@@ -58,7 +58,7 @@ test: test_interaction_networks.cc
 
 
 clean:
-	rm -f $(PROJECT) web/$(PROJECT).js *.js.map *~ source/*.o test
+	rm -f $(PROJECT) web/$(PROJECT).js *.js.map *~ source/*.o test *.gcda *.gcno
 
 # Debugging information
 print-%: ; @echo '$(subst ','\'',$*=$($*))'
