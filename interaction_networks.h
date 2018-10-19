@@ -259,6 +259,9 @@ emp::WeightedGraph calc_competition(emp::vector<org_t> pop,
     fit_map_t fitnesses = fit_fun(pop, attrs);
 
     for (size_t i = 0; i < pop.size(); i++) {
+        effects.SetLabel(i, emp::to_string(pop[i]));
+        // std::cout << effects.GetLabel(i) << std::endl;
+
         emp::vector<org_t> curr = pop;
         for (int & ax : curr[i]) {
             ax = 0; // Replace org with null org so pop size stays same

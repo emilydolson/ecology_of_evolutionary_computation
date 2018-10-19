@@ -15,9 +15,11 @@ namespace UI = emp::web;
 
 // UI::Document doc("emp_base");
 Controller c;
-D3::LogScale edge_color;
-D3::LogScale edge_width;
+D3::PowScale edge_color;
+D3::LinearScale edge_width;
 D3::LinearScale node_color;
+D3::ToolTip edge_tool_tip([](double d) {return D3::FormatFunction(".4f")(d);});
+D3::ToolTip node_tool_tip([](std::string d) {return d;});
 
 UI::Document div_controls("div_controls");
 
@@ -70,42 +72,81 @@ void ResetScales() {
         }
     }
 
+    edge_color.Exponent(.25);
     edge_color.SetDomain(emp::array<double, 3>({min_edge, 0, max_edge}));
-    edge_color.SetRange(emp::array<std::string, 3>({"red", "white", "blue"}));
+    edge_color.SetInterpolate("interpolateLab");
+    edge_color.SetRange(emp::array<std::string, 3>({"red", "grey", "blue"}));
 
     edge_width.SetDomain(emp::array<double, 3>({min_edge, 0, max_edge}));
     edge_width.SetRange(emp::array<double, 3>({5, 0, 5}));
 }
 
+
 void DrawGraph(emp::WeightedGraph g, std::string canvas_id, double radius = 150) {
     D3::Selection s = D3::Select(canvas_id);
+    D3::Selection defs = D3::Select("#arrow_defs");
+
+    std::function<std::string(std::string)> MakeArrow = [&defs](std::string color) {
+        std::string id = "arrow_" + color;
+        emp::remove_chars(id, "#,() ");
+
+        defs.Append("svg:marker")
+            .SetAttr("id", id)
+            .SetAttr("viewBox", "0 -5 10 10")
+            .SetAttr("refX", 5) // This sets how far back it sits, kinda
+            .SetAttr("refY", 0)
+            .SetAttr("markerWidth", 9)
+            .SetAttr("markerHeight", 9)
+            .SetAttr("orient", "auto")
+            .SetAttr("markerUnits", "userSpaceOnUse")
+            .Append("svg:path")
+            .SetAttr("d", "M0,-5L10,0L0,5")
+            .SetStyle("fill", color);
+        
+        return "url(#" + id + ")";
+    };
+
     double theta = 0;
     double inc = 2*3.14 / g.GetNodes().size();
     for (emp::Graph::Node n : g.GetNodes()) {
         double cx = radius + cos(theta) * radius;
         double cy = radius + sin(theta) * radius;
         theta += inc;
-        s.Append("circle").SetAttr("r", 10).SetAttr("cx", cx).SetAttr("cy", cy);
+        D3::Selection new_node = s.Append("circle");
+        new_node.SetAttr("r", 10).SetAttr("cx", cx).SetAttr("cy", cy).BindToolTipMouseover(node_tool_tip);;
+        // std::cout << n.GetLabel() << std::endl;
+        EM_ASM_ARGS({js.objects[$0].datum(Pointer_stringify($1));}, new_node.GetID(), n.GetLabel().c_str());
     }
 
     D3::LineGenerator l;
     auto weights = g.GetWeights();
     for (int i = 0; i < weights.size(); ++i) {
         for (int j = 0; j < weights[i].size(); ++j) {
-            std::cout << weights[i][j] << std::endl;
+            // std::cout << weights[i][j] << std::endl;
             if (weights[i][j]) {
                 double cxi = radius + cos(i*inc) * radius;
                 double cxj = radius + cos(j*inc) * radius;
                 double cyi = radius + sin(i*inc) * radius;
                 double cyj = radius + sin(j*inc) * radius;
                 std::string color = edge_color.ApplyScaleString(weights[i][j]);
-                std::cout << color << std::endl;
+                // std::cout << color << std::endl;
                 emp::array<emp::array<double, 2>, 2> data({emp::array<double, 2>({cxi, cyi}), emp::array<double, 2>({cxj, cyj})});
-                s.Append("path").SetAttr("d", l.Generate(data)).SetStyle("stroke", color).SetStyle("stroke-width", edge_width.ApplyScale(weights[i][j]));
+                D3::Selection n = s.Append("path");
+                n.SetAttr("d", l.Generate(data))
+                 .SetStyle("stroke", color)
+                 .SetStyle("stroke-width", edge_width.ApplyScale(weights[i][j]))
+                 .SetAttr("marker-end", MakeArrow(color))
+                 .BindToolTipMouseover(edge_tool_tip);
+
+                EM_ASM_ARGS({js.objects[$0].datum($1);}, n.GetID(), weights[i][j]);
+                //  std::cout << MakeArrow(color) << std::endl;
                 // s.Append("path").SetAttr("d", "M"+emp::to_string(cxi)+","+emp::to_string(cyi)+"L"+emp::to_string(cxj)+","+emp::to_string(cyj)).SetStyle("stroke", color).SetStyle("stroke-width", weights[i][j]*10);
             }
         }
     }
+
+    s.SetupToolTip(edge_tool_tip);
+    s.SetupToolTip(node_tool_tip);
 
 }
 
@@ -117,7 +158,7 @@ int main() {
     
     auto pop_selector = UI::Input([](std::string curr){ 
         c.SetPopSize(emp::from_string<double>(curr));
-        std::cout << c.GetPopSize() << std::endl;
+        // std::cout << c.GetPopSize() << std::endl;
     }, "range", "Population size", "popsize_slider");
     pop_selector.Min(2);
     pop_selector.Max(100);
@@ -132,7 +173,7 @@ int main() {
 
     auto sigma_share_selector = UI::Input([](std::string curr){ 
         c.SetSigmaShare(emp::from_string<double>(curr));
-        std::cout << c.GetSigmaShare() << std::endl;
+        // std::cout << c.GetSigmaShare() << std::endl;
     }, "range", "Sharing threshold", "sigmashare_slider");
     sigma_share_selector.Min(0);
     sigma_share_selector.Max(50);
@@ -191,7 +232,11 @@ int main() {
     c.Regenerate();
     ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph");    
     
-    emp::web::OnDocumentReady([](){EM_ASM(d3.select("#redraw_button").classed("btn btn-primary btn-block", true););});
+    // edge_tool_tip.SetHtml([](int weight){return emp::to_string(weight);});
+
+    emp::web::OnDocumentReady([](){
+        EM_ASM(d3.select("#redraw_button").classed("btn btn-primary btn-block", true););
+    });
 
     // doc << div_controls;
     // using pop_t = emp::vector<emp::vector<int>>;
