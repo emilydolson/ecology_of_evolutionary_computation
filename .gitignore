@@ -38,3 +38,6 @@ analysis/dow_data.csv
 analysis/othello_data.csv
 analysis/square_data.csv
 web/css/open-iconic-master/
+analysis/.Rhistory
+analysis/.RData
+analysis/.Rproj.user/
