@@ -14,7 +14,7 @@ library(ggplot2)
 library(readr)
 library(grid)
 library(cowplot)
-all_data <- read_csv("~/repos/evo_comp_ecology/analysis/all_data.csv")
+all_data <- read_csv("~/repos/ecology_of_evolutionary_computation/analysis/all_data.csv")
 all_data$id <- as.integer(all_data$seed)
 sharing_collatz <- subset(all_data, selection=="sharing")
 sharing_collatz$sel_param <- as.factor(sharing_collatz$sel_param)
@@ -25,7 +25,7 @@ lexicase_collatz$sel_param <- as.factor(lexicase_collatz$sel_param)
 
 representative_collatz <- subset(all_data, (all_data$sel_param == 10 | all_data$selection != "sharing") & (all_data$sel_param == -1 | all_data$selection != "lexicase") & (all_data$sel_param == -1 | all_data$selection != "resource") )
 
-square_data <- read_csv("~/repos/evo_comp_ecology/analysis/square_data.csv")
+square_data <- read_csv("~/repos/ecology_of_evolutionary_computation/analysis/square_data.csv")
 square_data$id <- as.integer(square_data$seed)
 sharing_square <- subset(square_data, selection=="sharing")
 sharing_square$sel_param <- as.factor(sharing_square$sel_param)
@@ -46,7 +46,7 @@ lexicase_othello$sel_param <- as.factor(lexicase_othello$sel_param)
 
 representative_othello <- subset(othello_data, (othello_data$sel_param == 1 | othello_data$selection != "sharing"))
 
-dow_data <- read_csv("~/repos/evo_comp_ecology/analysis/dow_data.csv")
+dow_data <- read_csv("~/repos/ecology_of_evolutionary_computation//analysis/dow_data.csv")
 dow_data$selection <- as.factor(dow_data$selection)
 dow_data$id <- as.integer(dow_data$seed)
 sharing_dow <- subset(dow_data, selection=="sharing")
@@ -58,7 +58,11 @@ lexicase_dow$sel_param <- as.factor(lexicase_dow$sel_param)
 
 representative_dow <- subset(dow_data, (dow_data$sel_param == 10 | dow_data$selection != "sharing"))
 
+representative_collatz$problem <- "Collatz"
+representative_dow$problem <- "Dow"
+representative_square$problem <- "Square"
 
+rep_all <- rbind(representative_collatz, representative_square, representative_dow)
 ```
 
 ```{r}
