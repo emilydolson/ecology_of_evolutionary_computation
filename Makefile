@@ -40,20 +40,20 @@ $(PROJECT):	source/native/$(PROJECT).cc
 $(PROJECT).js: source/web/$(PROJECT)-web.cc
 	$(CXX_web) $(CFLAGS_web) source/web/$(PROJECT)-web.cc -o web/$(PROJECT).js
 
-interaction_networks:	interaction_networks.cc
-	$(CXX_nat) $(CFLAGS_nat) interaction_networks.cc -o interaction_networks
+interaction_networks:	source/native/interaction_networks.cc
+	$(CXX_nat) $(CFLAGS_nat) source/native/interaction_networks.cc -o interaction_networks
 
-debug-interaction_networks:	interaction_networks.cc
-	$(CXX_nat) $(CFLAGS_nat_debug) interaction_networks.cc -o interaction_networks
+debug-interaction_networks:	source/native/interaction_networks.cc
+	$(CXX_nat) $(CFLAGS_nat_debug) source/native/interaction_networks.cc -o interaction_networks
 
-interaction_networks.js: interaction_networks-web.cc
-	$(CXX_web) $(CFLAGS_web) interaction_networks-web.cc -o web/interaction_networks.js
+interaction_networks.js: source/web/interaction_networks-web.cc
+	$(CXX_web) $(CFLAGS_web) source/web/interaction_networks-web.cc -o web/interaction_networks.js
 
-debug-interaction_networks.js: interaction_networks-web.cc
-	$(CXX_web) $(CFLAGS_web_debug) interaction_networks-web.cc -o web/interaction_networks.js
+debug-interaction_networks.js: source/web/interaction_networks-web.cc
+	$(CXX_web) $(CFLAGS_web_debug) source/web/interaction_networks-web.cc -o web/interaction_networks.js
 
-test: test_interaction_networks.cc
-	$(CXX_nat) $(CFLAGS_nat_debug) test_interaction_networks.cc -o test
+test: source/tests/test_interaction_networks.cc
+	$(CXX_nat) $(CFLAGS_nat_debug) source/tests/test_interaction_networks.cc -o test
 	./test
 
 

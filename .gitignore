@@ -21,3 +21,20 @@ detail-800.spop
 detail-900.spop
 .ipynb_checkpoints/Selection Scheme Communities-checkpoint.ipynb
 .Rproj.user
+test_interaction_networks.gcda
+test_interaction_networks.gcno
+analysis/Rplot01.png
+analysis/Rplot02.png
+analysis/Rplot03.png
+analysis/Rplot04.png
+analysis/Rplot05.png
+analysis/Rplot06.png
+analysis/Rplot07.png
+analysis/Rplot.png
+analysis/all_data.csv
+analysis/all_data_round3.csv
+analysis/box_data.csv
+analysis/dow_data.csv
+analysis/othello_data.csv
+analysis/square_data.csv
+web/css/open-iconic-master/

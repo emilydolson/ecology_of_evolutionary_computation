@@ -9,7 +9,7 @@
 
 #include "tools/Graph.h"
 
-#include "interaction_networks.h"
+#include "../interaction_networks.h"
 
 namespace UI = emp::web;
 
