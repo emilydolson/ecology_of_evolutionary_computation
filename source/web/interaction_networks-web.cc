@@ -229,6 +229,8 @@ int main() {
     div_controls << niche_width_selector << "<br>";    
     div_controls << max_score_selector << "<br>";    
     div_controls << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Redraw", "redraw_button");
+    div_controls << UI::Button( [](){ c.TournamentSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Tournament Select", "tournament_button");
+    div_controls << UI::Button( [](){ c.LexicaseSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Lexicase Select", "lexicase_button");
     c.Regenerate();
     ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph");    
     

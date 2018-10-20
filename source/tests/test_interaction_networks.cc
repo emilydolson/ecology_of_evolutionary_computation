@@ -59,7 +59,7 @@ TEST_CASE("Lexicase", "[selection_schemes]") {
 
     pop = emp::vector<org_t>({{3,1,2}, {1, 1, 2}, {2,1,1}});
     fits = lexicase_fitness(pop, DEFAULT);
-    CHECK(fits[{3,1,2}] == 1);
+    CHECK(fits[{3,1,2}] == Approx(1));
     CHECK(fits[{1,1,2}] == 0);
     CHECK(fits[{2,1,1}] == 0);
 
@@ -75,6 +75,46 @@ TEST_CASE("Lexicase", "[selection_schemes]") {
     CHECK(fits[{1,3,2,1,1}] == Approx(.333333));
     CHECK(fits[{2,3,1,1,1}] == Approx(.16666667));
 
+    emp::Random r;
+    pop = make_pop(r, 20, 10);
+    fits = lexicase_fitness(pop, DEFAULT);
+    double total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
+
+    pop = make_pop(r, 20, 12);
+    fits = lexicase_fitness(pop, DEFAULT);
+    total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
+
+    pop = make_pop(r, 20, 13);
+    fits = lexicase_fitness(pop, DEFAULT);
+    total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
+
+    pop = make_pop(r, 20, 14);
+    fits = lexicase_fitness(pop, DEFAULT);
+    total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
+
+    pop = make_pop(r, 20, 18);
+    fits = lexicase_fitness(pop, DEFAULT);
+    total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
 
 }
 

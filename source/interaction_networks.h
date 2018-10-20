@@ -10,7 +10,9 @@
 #include "base/vector.h"
 #include "base/assert.h"
 #include "tools/Random.h"
+#include "tools/random_utils.h"
 #include "tools/vector_utils.h"
+#include "tools/map_utils.h"
 #include "tools/string_utils.h"
 #include "tools/math.h"
 #include "tools/distances.h"
@@ -85,19 +87,33 @@ emp::vector<org_t> FindHighest(emp::vector<org_t> & pop, int axis) {
     return winners;
 }
 
+long int PartialFactorial(int start, int stop) {
+    // std::cout << start << " " << stop << std::endl;
+    long int result = start;
+    while (start > stop) {
+        result *= start - 1;
+        start--;        
+        // std::cout << "test: " << start << std::endl;
+    }
+    // std::cout << result << std::endl;
+    return result;
+}
+
 void TraverseDecisionTree(fit_map_t & fit_map, emp::vector<org_t> & pop, emp::vector<int> axes) {
     if (axes.size() == 1) {
         emp::vector<org_t> winners = FindHighest(pop, axes[0]);
         for (org_t & org : winners) {
-            fit_map[org]+=1.0/(double)winners.size();
+            fit_map[org]+=1.0/((double)winners.size()*emp::Factorial(pop[0].size()));
         }
         return;
     }
 
     for (int ax : axes) {
+        // std::cout << "Axis: " << ax << " out of " << emp::to_string(axes) << std::endl;
         emp::vector<org_t> winners = FindHighest(pop, ax);
         if (winners.size() == 1) { // Not a tie
-            fit_map[winners[0]] += (double)emp::Factorial(axes.size() - 1);
+            // std::cout << "1 winner: " << emp::to_string(winners[0]) << " Controls " << (double)emp::Factorial(axes.size() - 1)<< std::endl;
+            fit_map[winners[0]] += 1.0/PartialFactorial(pop[0].size(), axes.size());//(double)emp::Factorial(axes.size() - 1);
         } else { // tie
             emp::vector<int> next_axes;
             for (int new_ax : axes) {
@@ -109,6 +125,7 @@ void TraverseDecisionTree(fit_map_t & fit_map, emp::vector<org_t> & pop, emp::ve
         }
     }
 }
+
 
 std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> lexicase_fitness = [](emp::vector<org_t> & pop, all_attrs attrs=DEFAULT) {
 
@@ -126,8 +143,9 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> lexicase_fitness = [](e
 
     for (org_t & org : de_dup_pop) {
         fit_map[org] /= emp::Count(pop, org);
-        fit_map[org] /= (double)emp::Factorial(n_funs); // convert to proportion of "islands"
-
+        // std::cout << "Pre div: " << fit_map[org] << std::endl;
+        // fit_map[org] /= emp::Factorial(n_funs); // convert to proportion of "islands"
+        // std::cout << "Post div: " << fit_map[org] << " Divided by: " << (double)emp::Factorial(n_funs) << std::endl;
     }
 
     return fit_map;
@@ -306,6 +324,12 @@ public:
         share_network = calc_competition(pop, sharing_fitness, settings);
     }
 
+    void Update() {
+        eco_network = calc_competition(pop, eco_ea_fitness, settings);
+        lex_network = calc_competition(pop, lexicase_fitness, settings);
+        share_network = calc_competition(pop, sharing_fitness, settings);        
+    }
+
     void SetPopSize(int s) {
         pop_size = s;
     }
@@ -348,6 +372,129 @@ public:
         settings.SetMaxScore(s);
     }
 
+    void TournamentSelect() {
+        emp::vector<org_t> new_pop;
+
+        emp::vector<size_t> entries;
+        for (size_t T = 0; T < pop_size; T++) {
+            entries.resize(0);
+            // Choose organisms for this tournament (with replacement!)
+            for (size_t i=0; i < 2; i++) entries.push_back( r.GetUInt(pop_size) );
+
+            double best_fit = emp::Sum(pop[entries[0]]);
+            size_t best_id = entries[0];
+
+            // Search for a higher fit org in the tournament.
+            for (size_t i = 1; i < 2; i++) {
+                const double cur_fit = emp::Sum(pop[entries[i]]);
+                if (cur_fit > best_fit) {
+                    best_fit = cur_fit;
+                    best_id = entries[i];
+                }
+            }
+
+            // Place the highest fitness into the next generation!
+            new_pop.push_back(pop[best_id]);
+        }
+        pop = new_pop;
+        Update();
+    }
+
+    void LexicaseSelect() {
+        emp::vector<org_t> new_pop;
+
+        std::map<org_t, int> genotype_counts;
+        emp::vector<emp::vector<size_t>> genotype_lists;
+
+        // Find all orgs with same genotype - we can dramatically reduce
+        // fitness evaluations this way.
+        for (size_t org_id = 0; org_id < pop_size; org_id++) {
+            org_t gen = pop[org_id];
+            if (emp::Has(genotype_counts, gen)) {
+                genotype_lists[genotype_counts[gen]].push_back(org_id);
+            } else {
+                genotype_counts[gen] = genotype_lists.size();
+                genotype_lists.emplace_back(emp::vector<size_t>{org_id});
+            }
+        }
+
+        emp::vector<size_t> all_gens(genotype_lists.size()), cur_gens, next_gens;
+
+        for (size_t i = 0; i < genotype_lists.size(); i++) {
+            all_gens[i] = i;
+        }
+
+        emp::vector< emp::vector<double> > fitnesses(n_traits);
+
+        for (size_t fit_id = 0; fit_id < n_traits; ++fit_id) {
+            fitnesses[fit_id].resize(genotype_counts.size());
+            int id = 0;
+            for (auto & gen : genotype_lists) {
+                fitnesses[fit_id][id] = gen[fit_id];
+                id++;
+            }
+        }
+
+        for (size_t repro = 0; repro < pop_size; ++repro) {
+            emp::vector<size_t> order = emp::GetPermutation(r, n_traits);
+
+            cur_gens = all_gens;  // Start with all of the organisms.
+            int depth = -1;
+            for (size_t fit_id : order) {
+                depth++;
+
+                double max_fit = fitnesses[fit_id][cur_gens[0]];
+                next_gens.push_back(cur_gens[0]);
+    
+                for (size_t gen_id : cur_gens) {
+
+                    const double cur_fit = fitnesses[fit_id][gen_id];
+            
+                    if (cur_fit > max_fit) {
+                        max_fit = cur_fit;             // This is a the NEW maximum fitness for this function
+                        next_gens.resize(0);           // Clear out orgs with former maximum fitness
+                        next_gens.push_back(gen_id);   // Add this org as only one with new max fitness
+                    }
+                    else if (cur_fit == max_fit) {
+                        next_gens.push_back(gen_id);   // Same as cur max fitness -- save this org too.
+                    }
+                }
+                // Make next_orgs into new cur_orgs; make cur_orgs allocated space for next_orgs.
+                std::swap(cur_gens, next_gens);
+                next_gens.resize(0);
+
+                if (cur_gens.size() == 1) break;  // Stop if we're down to just one organism.
+            }
+
+            // Place a random survivor (all equal) into the next generation!
+            emp_assert(cur_gens.size() > 0, cur_gens.size(), n_traits, all_gens.size());
+            size_t options = 0;
+            for (size_t gen : cur_gens) {
+                options += genotype_lists[gen].size();
+            }
+            size_t winner = r.GetUInt(options);
+            int repro_id = -1;
+
+            for (size_t gen : cur_gens) {
+                if (winner < genotype_lists[gen].size()) {
+                    repro_id = (int) genotype_lists[gen][winner];
+                    break;
+                }
+                winner -= genotype_lists[gen].size();
+            }
+            emp_assert(repro_id != -1, repro_id, winner, options);
+
+            emp::vector<size_t> used = emp::Slice(order, 0, depth+1);
+            new_pop.push_back(pop[repro_id]);
+        }
+
+        pop = new_pop;
+        Update();
+    }
+
+    void ResourceSelect() {
+
+    }
 
 };
 
