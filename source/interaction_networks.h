@@ -18,6 +18,7 @@
 #include "tools/distances.h"
 #include "tools/attrs.h"
 #include "tools/Graph.h"
+#include "Evolve/Resource.h"
 
 #include <permutations.hpp>
 
@@ -31,17 +32,25 @@ DEFINE_ATTR(Cost);
 DEFINE_ATTR(Cf);
 DEFINE_ATTR(NicheWidth);
 DEFINE_ATTR(MaxScore);
+DEFINE_ATTR(ResourceInflow);
+DEFINE_ATTR(ResourceOutflow);
+DEFINE_ATTR(MaxBonus);
 
 constexpr auto DEFAULT{MakeAttrs(SigmaShare(8.0),
                                  Alpha(1.0),
                                  Cost(1.0),
                                  Cf(.0025),                                 
                                  NicheWidth(3.0),
-                                 MaxScore(10.0))};
+                                 MaxScore(10.0),
+                                 ResourceInflow(2000),
+                                 ResourceOutflow(.01),
+                                 MaxBonus(5))};
 
 using all_attrs = emp::tools::Attrs<typename SigmaShare::value_t<double>, typename Alpha::value_t<double>, 
                         typename Cost::value_t<double>, typename Cf::value_t<double>,
-                        typename NicheWidth::value_t<double>, typename MaxScore::value_t<double>>;
+                        typename NicheWidth::value_t<double>, typename MaxScore::value_t<double>,
+                        typename ResourceInflow::value_t<double>, typename ResourceOutflow::value_t<double>,
+                        typename MaxBonus::value_t<double> >;
 
 
 // from https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
@@ -222,7 +231,7 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> eco_ea_fitness = [](emp
     }
 
     for (int axis : emp::NRange(0, (int)n_funs)) {
-        double res = 2000;
+        double res = ResourceInflow::Get(attrs);
         double count = 0;
 
         for (org_t & org : pop) {
@@ -237,7 +246,7 @@ std::function<fit_map_t(emp::vector<org_t>&, all_attrs)> eco_ea_fitness = [](emp
 
         for (org_t & org : pop) {
             if (org[axis] >= NicheWidth::Get(attrs)) {
-                base_fit_map[org] *= emp::Pow2(Cf::Get(attrs)*res*emp::Pow(org[axis]/MaxScore::Get(attrs),2.0) - Cost::Get(attrs));
+                base_fit_map[org] *= emp::Pow2(std::min(Cf::Get(attrs)*res*emp::Pow(org[axis]/MaxScore::Get(attrs),2.0) - Cost::Get(attrs), MaxBonus::Get(attrs)));
             }
         }
     }
@@ -307,6 +316,7 @@ public:
     int n_traits = 5;
     all_attrs settings = DEFAULT;
     emp::Random r;
+    emp::vector<emp::Resource> resources;
 
     emp::WeightedGraph eco_network;
     emp::WeightedGraph lex_network;
@@ -322,12 +332,23 @@ public:
         eco_network = calc_competition(pop, eco_ea_fitness, settings);
         lex_network = calc_competition(pop, lexicase_fitness, settings);
         share_network = calc_competition(pop, sharing_fitness, settings);
+
+        resources.resize(0);
+        for (size_t i=0; i<n_traits; i++) {
+            resources.push_back(emp::Resource(GetResourceInflow(), GetResourceInflow(), GetResourceOutflow()));
+        }
+
     }
 
     void Update() {
         eco_network = calc_competition(pop, eco_ea_fitness, settings);
         lex_network = calc_competition(pop, lexicase_fitness, settings);
         share_network = calc_competition(pop, sharing_fitness, settings);        
+
+        for (size_t i=0; i<n_traits; i++) {
+            resources[i].Update();
+        }
+
     }
 
     void SetPopSize(int s) {
@@ -356,20 +377,64 @@ public:
         settings.SetAlpha(s);
     }
 
+    double GetAlpha() {
+        return Alpha::Get(settings);
+    }
+
+    void SetResourceInflow(double s) {
+        settings.SetResourceInflow(s);
+    }
+
+    double GetResourceInflow() {
+        return ResourceInflow::Get(settings);
+    }
+
+    void SetResourceOutflow(double s) {
+        settings.SetResourceOutflow(s);
+    }
+
+    double GetResourceOutflow() {
+        return ResourceOutflow::Get(settings);
+    }
+
     void SetCost(double s) {
         settings.SetCost(s);
+    }
+
+    double GetCost() {
+        return Cost::Get(settings);
     }
 
     void SetCf(double s) {
         settings.SetCf(s);
     }
 
+    double GetCf() {
+        return Cf::Get(settings);
+    }
+
     void SetNicheWidth(double s) {
         settings.SetNicheWidth(s);
     }
-    
+
+    double GetNicheWidth() {
+        return NicheWidth::Get(settings);
+    }
+
     void SetMaxScore(double s) {
         settings.SetMaxScore(s);
+    }
+
+    double GetMaxScore() {
+        return MaxScore::Get(settings);
+    }
+
+    void SetMaxBonus(double s) {
+        settings.SetMaxBonus(s);
+    }
+
+    double GetMaxBonus() {
+        return MaxBonus::Get(settings);
     }
 
     void TournamentSelect() {
@@ -493,7 +558,107 @@ public:
     }
 
     void ResourceSelect() {
+        emp::vector<org_t> new_pop;
 
+       emp::vector<double> base_fitness(pop_size);
+       emp::vector< emp::vector<double> > extra_fitnesses(n_traits);
+       for (size_t i=0; i < n_traits; i++) {
+         extra_fitnesses[i].resize(pop_size);
+       }
+
+       for (size_t org_id = 0; org_id < pop_size; org_id++) {
+            base_fitness[org_id] = 0;
+
+            for (size_t ex_id = 0; ex_id < n_traits; ex_id++) {
+
+                resources[ex_id].Inc(resources[ex_id].GetInflow()/pop_size);
+                double cur_fit = pop[org_id][ex_id]/GetMaxScore();
+
+                if (cur_fit > GetNicheWidth()) {
+                    cur_fit = emp::Pow(cur_fit, 2.0);
+                    cur_fit *= GetCf()*(resources[ex_id].GetAmount()-GetCost());
+                    cur_fit -= GetCost();
+                } else {
+                    cur_fit = 0;
+                }
+
+                cur_fit = std::min(cur_fit, GetMaxBonus());
+                extra_fitnesses[ex_id][org_id] = emp::Pow2(cur_fit);
+                base_fitness[org_id] *= emp::Pow2(cur_fit);
+                resources[ex_id].Dec(std::abs(cur_fit));
+            }
+       }
+
+       emp::vector<size_t> entries;
+       for (size_t T = 0; T < pop_size; T++) {
+         entries.resize(0);
+
+         for (size_t i=0; i<2; i++) entries.push_back( r.GetUInt(pop_size) ); // Allows replacement!
+
+        double best_fit = base_fitness[entries[0]];
+        size_t best_id = entries[0];
+
+        // Search for a higher fit org in the tournament.
+        for (size_t i = 1; i < 2; i++) {
+            const double cur_fit = base_fitness[entries[i]];
+            if (cur_fit > best_fit) {
+                best_fit = cur_fit;
+                best_id = entries[i];
+            }
+        }
+
+         // Place the highest fitness into the next generation!
+         new_pop.push_back(pop[best_id]);
+       }
+
+
+        for (size_t i=0; i<n_traits; i++) {
+            resources[i].Dec(GetResourceInflow()); // Inflow is about to get added again
+        }
+        pop = new_pop;
+        Update();
+
+    }
+
+    void SharingSelect() {
+        emp::vector<double> fits;
+        emp::vector<org_t> new_pop;
+
+        double sharing_threshold = GetSigmaShare();
+        double alpha = GetAlpha();
+
+        for (org_t & org1 : pop) {
+            double niche_count = 0;
+            for (org_t & org2 : pop) {
+                double dist = emp::EuclideanDistance(org1, org2);
+                niche_count += std::max(1.0 - std::pow(dist/sharing_threshold, alpha), 0.0);            
+            }
+            fits.push_back(emp::Sum(org1)/niche_count);
+        }
+
+        emp::vector<size_t> entries;
+        for (size_t T = 0; T < pop_size; T++) {
+            entries.resize(0);
+            // Choose organisms for this tournament (with replacement!)
+            for (size_t i=0; i < 2; i++) entries.push_back( r.GetUInt(pop_size) );
+
+            double best_fit = fits[entries[0]];
+            size_t best_id = entries[0];
+
+            // Search for a higher fit org in the tournament.
+            for (size_t i = 1; i < 2; i++) {
+                const double cur_fit = fits[entries[i]];
+                if (cur_fit > best_fit) {
+                    best_fit = cur_fit;
+                    best_id = entries[i];
+                }
+            }
+
+            // Place the highest fitness into the next generation!
+            new_pop.push_back(pop[best_id]);
+        }
+        pop = new_pop;
+        Update();
     }
 
 };

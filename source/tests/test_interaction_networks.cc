@@ -136,6 +136,15 @@ TEST_CASE("Fitness sharing", "[selection_schemes]") {
     CHECK(fits[{1,10}] == Approx(.5));
     CHECK(fits[{1,1}] == Approx(0));
 
+    emp::Random r;
+    pop = make_pop(r, 20, 10);
+    fits = sharing_fitness(pop, DEFAULT);
+    double total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
+
 }
 
 TEST_CASE("Eco-EA", "[selection_schemes]") {
@@ -156,6 +165,15 @@ TEST_CASE("Eco-EA", "[selection_schemes]") {
     CHECK(fits[{1,3,2,1,1}] == Approx(0.0833335));
     CHECK(fits[{2,3,1,1,1}] == Approx(0.0833335));
     CHECK(fits[{2,1,1,1,1}] == Approx(.3333333));
+
+    emp::Random r;
+    pop = make_pop(r, 20, 10);
+    fits = eco_ea_fitness(pop, DEFAULT);
+    double total = 0;
+    for (auto p : fits) {
+        total += p.second;
+    }
+    CHECK(total == Approx(1));
 
 }
 

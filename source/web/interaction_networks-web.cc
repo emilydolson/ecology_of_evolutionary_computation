@@ -168,7 +168,7 @@ int main() {
         c.SetNTraits(emp::from_string<double>(curr));
     }, "range", "Number of traits", "ntraits_slider");
     trait_selector.Min(1);
-    trait_selector.Max(25);
+    trait_selector.Max(18);
     trait_selector.Value(1);
 
     auto sigma_share_selector = UI::Input([](std::string curr){ 
@@ -214,11 +214,36 @@ int main() {
 
     auto max_score_selector = UI::Input([](std::string curr){ 
         c.SetMaxScore(emp::from_string<double>(curr));
-    }, "range", "Max consumption", "maxscore_slider");
+    }, "range", "Max score", "maxscore_slider");
     max_score_selector.Min(0);
     max_score_selector.Max(10);
     max_score_selector.Value(3);
     max_score_selector.Step(.5);
+
+    auto resource_inflow_selector = UI::Input([](std::string curr){ 
+        c.SetResourceInflow(emp::from_string<double>(curr));
+    }, "range", "Resource Inflow", "inflow_slider");
+    resource_inflow_selector.Min(0);
+    resource_inflow_selector.Max(100000);
+    resource_inflow_selector.Value(2000);
+    resource_inflow_selector.Step(100);
+
+    auto resource_outflow_selector = UI::Input([](std::string curr){ 
+        c.SetResourceOutflow(emp::from_string<double>(curr));
+    }, "range", "Resource Outflow", "outflow_slider");
+    resource_outflow_selector.Min(0);
+    resource_outflow_selector.Max(1);
+    resource_outflow_selector.Value(.01);
+    resource_outflow_selector.Step(.001);
+
+    auto max_bonus_selector = UI::Input([](std::string curr){ 
+        c.SetMaxBonus(emp::from_string<double>(curr));
+    }, "range", "Max consumption", "maxbonus_slider");
+    max_bonus_selector.Min(0);
+    max_bonus_selector.Max(100);
+    max_bonus_selector.Value(5);
+    max_bonus_selector.Step(.5);
+
 
     div_controls << pop_selector << "<br>";
     div_controls << trait_selector << "<br>";
@@ -228,16 +253,27 @@ int main() {
     div_controls << cf_selector << "<br>";    
     div_controls << niche_width_selector << "<br>";    
     div_controls << max_score_selector << "<br>";    
-    div_controls << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Redraw", "redraw_button");
+    div_controls << resource_inflow_selector << "<br>";    
+    div_controls << resource_outflow_selector << "<br>";    
+    div_controls << max_bonus_selector << "<br>";    
+    div_controls << UI::Button( [](){ c.Update(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Update", "update_button");
+    div_controls << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Regenerate population", "redraw_button");
     div_controls << UI::Button( [](){ c.TournamentSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Tournament Select", "tournament_button");
     div_controls << UI::Button( [](){ c.LexicaseSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Lexicase Select", "lexicase_button");
+    div_controls << UI::Button( [](){ c.SharingSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Sharing Select", "sharing_button");
+    div_controls << UI::Button( [](){ c.ResourceSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Eco-EA Select", "ecoea_button"); 
     c.Regenerate();
     ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph");    
     
     // edge_tool_tip.SetHtml([](int weight){return emp::to_string(weight);});
 
     emp::web::OnDocumentReady([](){
+        EM_ASM(d3.select("#update_button").classed("btn btn-primary btn-block", true););
         EM_ASM(d3.select("#redraw_button").classed("btn btn-primary btn-block", true););
+        EM_ASM(d3.select("#lexicase_button").classed("btn btn-primary btn-block", true););
+        EM_ASM(d3.select("#sharing_button").classed("btn btn-primary btn-block", true););
+        EM_ASM(d3.select("#tournament_button").classed("btn btn-primary btn-block", true););
+        EM_ASM(d3.select("#ecoea_button").classed("btn btn-primary btn-block", true););
     });
 
     // doc << div_controls;
