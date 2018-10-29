@@ -22,6 +22,7 @@ D3::ToolTip edge_tool_tip([](double d) {return D3::FormatFunction(".4f")(d);});
 D3::ToolTip node_tool_tip([](std::string d) {return d;});
 
 UI::Document div_controls("div_controls");
+UI::Document div_buttons("div_buttons");
 
 void ClearGraph() {
     D3::Select("#lexicase_graph").SelectAll("circle").Remove();
@@ -150,6 +151,10 @@ void DrawGraph(emp::WeightedGraph g, std::string canvas_id, double radius = 150)
 
 }
 
+void UpdateParam() {
+    c.Update(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); 
+}
+
 // std::string GetEdgeColor(double w) {
 //     EM_ASM_ARGS({empjs.objects[$0]}, edge_color.GetID());
 // }
@@ -158,7 +163,7 @@ int main() {
     
     auto pop_selector = UI::Input([](std::string curr){ 
         c.SetPopSize(emp::from_string<double>(curr));
-        // std::cout << c.GetPopSize() << std::endl;
+        UpdateParam(); 
     }, "range", "Population size", "popsize_slider");
     pop_selector.Min(2);
     pop_selector.Max(100);
@@ -166,6 +171,7 @@ int main() {
 
     auto trait_selector = UI::Input([](std::string curr){ 
         c.SetNTraits(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Number of traits", "ntraits_slider");
     trait_selector.Min(1);
     trait_selector.Max(18);
@@ -173,7 +179,7 @@ int main() {
 
     auto sigma_share_selector = UI::Input([](std::string curr){ 
         c.SetSigmaShare(emp::from_string<double>(curr));
-        // std::cout << c.GetSigmaShare() << std::endl;
+        UpdateParam();
     }, "range", "Sharing threshold", "sigmashare_slider");
     sigma_share_selector.Min(0);
     sigma_share_selector.Max(50);
@@ -182,6 +188,7 @@ int main() {
 
     auto alpha_selector = UI::Input([](std::string curr){ 
         c.SetAlpha(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Alpha", "alpha_slider");
     alpha_selector.Min(0);
     alpha_selector.Max(2);
@@ -190,6 +197,7 @@ int main() {
 
     auto cost_selector = UI::Input([](std::string curr){ 
         c.SetCost(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Cost", "cost_slider");
     cost_selector.Min(0);
     cost_selector.Max(10);
@@ -198,6 +206,7 @@ int main() {
 
     auto cf_selector = UI::Input([](std::string curr){ 
         c.SetCf(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Consumption Fraction", "cf_slider");
     cf_selector.Min(0);
     cf_selector.Max(1);
@@ -206,6 +215,7 @@ int main() {
 
     auto niche_width_selector = UI::Input([](std::string curr){ 
         c.SetNicheWidth(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Niche width", "nichewidth_slider");
     niche_width_selector.Min(0);
     niche_width_selector.Max(10);
@@ -214,6 +224,7 @@ int main() {
 
     auto max_score_selector = UI::Input([](std::string curr){ 
         c.SetMaxScore(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Max score", "maxscore_slider");
     max_score_selector.Min(0);
     max_score_selector.Max(10);
@@ -222,6 +233,7 @@ int main() {
 
     auto resource_inflow_selector = UI::Input([](std::string curr){ 
         c.SetResourceInflow(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Resource Inflow", "inflow_slider");
     resource_inflow_selector.Min(0);
     resource_inflow_selector.Max(100000);
@@ -230,6 +242,7 @@ int main() {
 
     auto resource_outflow_selector = UI::Input([](std::string curr){ 
         c.SetResourceOutflow(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Resource Outflow", "outflow_slider");
     resource_outflow_selector.Min(0);
     resource_outflow_selector.Max(1);
@@ -238,6 +251,7 @@ int main() {
 
     auto max_bonus_selector = UI::Input([](std::string curr){ 
         c.SetMaxBonus(emp::from_string<double>(curr));
+        UpdateParam();
     }, "range", "Max consumption", "maxbonus_slider");
     max_bonus_selector.Min(0);
     max_bonus_selector.Max(100);
@@ -245,10 +259,14 @@ int main() {
     max_bonus_selector.Step(.5);
 
 
+    div_controls << "<br><h4 style='text-align:center'>Overarching</h4>";
+    div_controls << "<p style='text-align:center'>(click \"Regenerate Population\" to see changes)</p>";
     div_controls << pop_selector << "<br>";
     div_controls << trait_selector << "<br>";
+    div_controls << "<br><h4 style='text-align:center'>Fitness sharing</h4>";
     div_controls << sigma_share_selector << "<br>";
     div_controls << alpha_selector << "<br>";
+    div_controls << "<br><h4 style='text-align:center'>Eco-EA</h4>";
     div_controls << cost_selector << "<br>";    
     div_controls << cf_selector << "<br>";    
     div_controls << niche_width_selector << "<br>";    
@@ -256,24 +274,24 @@ int main() {
     div_controls << resource_inflow_selector << "<br>";    
     div_controls << resource_outflow_selector << "<br>";    
     div_controls << max_bonus_selector << "<br>";    
-    div_controls << UI::Button( [](){ c.Update(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Update", "update_button");
-    div_controls << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Regenerate population", "redraw_button");
-    div_controls << UI::Button( [](){ c.TournamentSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Tournament Select", "tournament_button");
-    div_controls << UI::Button( [](){ c.LexicaseSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Lexicase Select", "lexicase_button");
-    div_controls << UI::Button( [](){ c.SharingSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Sharing Select", "sharing_button");
-    div_controls << UI::Button( [](){ c.ResourceSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Eco-EA Select", "ecoea_button"); 
+    // div_buttons << UI::Button( [](){ c.Update(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Update", "update_button");
+    div_buttons << " " << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Regenerate population", "redraw_button");
+    div_buttons << " " << UI::Button( [](){ c.TournamentSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Tournament Select", "tournament_button");
+    div_buttons << " " << UI::Button( [](){ c.LexicaseSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Lexicase Select", "lexicase_button");
+    div_buttons << " " << UI::Button( [](){ c.SharingSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Sharing Select", "sharing_button");
+    div_buttons << " " << UI::Button( [](){ c.ResourceSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Eco-EA Select", "ecoea_button"); 
     c.Regenerate();
     ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph");    
     
     // edge_tool_tip.SetHtml([](int weight){return emp::to_string(weight);});
 
     emp::web::OnDocumentReady([](){
-        EM_ASM(d3.select("#update_button").classed("btn btn-primary btn-block", true););
-        EM_ASM(d3.select("#redraw_button").classed("btn btn-primary btn-block", true););
-        EM_ASM(d3.select("#lexicase_button").classed("btn btn-primary btn-block", true););
-        EM_ASM(d3.select("#sharing_button").classed("btn btn-primary btn-block", true););
-        EM_ASM(d3.select("#tournament_button").classed("btn btn-primary btn-block", true););
-        EM_ASM(d3.select("#ecoea_button").classed("btn btn-primary btn-block", true););
+        EM_ASM(d3.select("#update_button").classed("btn btn-primary", true););
+        EM_ASM(d3.select("#redraw_button").classed("btn btn-primary", true););
+        EM_ASM(d3.select("#lexicase_button").classed("btn btn-primary", true););
+        EM_ASM(d3.select("#sharing_button").classed("btn btn-primary", true););
+        EM_ASM(d3.select("#tournament_button").classed("btn btn-primary", true););
+        EM_ASM(d3.select("#ecoea_button").classed("btn btn-primary", true););
     });
 
     // doc << div_controls;

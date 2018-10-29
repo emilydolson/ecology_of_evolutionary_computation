@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Selection scheme interaction networks</title>
+<title>Evolutionary computation interaction networks</title>
 
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 
@@ -36,8 +36,29 @@
     <h1>Interaction networks for ecological communities created by selection schemes </h1>
         <!-- Page dsecription -->
         <p>
-                <br>
-                This page lets you generate interaction networks under different parameter combinations. If you have questions or want to know more, feel free to <a href="http://emilyldolson.com/contact.html">contact me</a>!
+            <br>
+            In our paper, "Ecological theory provides insights into evolutionary computation", 
+            we show that different techniques for selecting individuals to reproduce create
+            radically different ecological communities. These differences can be characterized
+            using interaction networks: weighted, directed graphs in which nodes represent individuals
+            in the population and edges represent their effects on each other. Red edges indicate
+            harmful interactions and blue edges indicate beneficial interactions. For example, a red edge from node A to node B indicates that individual
+            A harms individual B (i.e. B has a lower chance of reproducing when A is present than if A were absent). Line weight and 
+            color saturation indicate interaction intensity (you can also mouse-over edges to see 
+            their precise weights). 
+        </p>
+        <p>
+            This page contains a simple simulation to facilitate easy exploration of interaction
+            networks in evolutionary computation. Individuals are lists of numbers (the length of these
+            lists is determined by the "number of traits" slider). Our goal in this toy example is to
+            evolve these lists to have the highest possible sum. In tournament selection and fitness sharing,
+            base fitness is determined by summing the list. The distance function for fitness sharing is 
+            Euclidean distance between the vectors. In Eco-EA and Lexicase selection, each element
+            in the list represents a sub-problem . 
+         </p>
+
+         <p>
+            If you have questions or want to know more, feel free to <a href="http://emilyldolson.com/contact.html">contact me</a>!
          </p>
     
 
@@ -47,23 +68,50 @@
 <div id="emp_base">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col col-md-auto align-self-center justify-content-center">
-                <div id="div_controls"></div>
+            <div class="col col-md-auto">
+                <div class="card">
+                    <div class="card-header" data-toggle="tooltip" data-placement="top" title="Many selection schemes have parameters that must be set ahead of time - set them here">
+                        Parameters
+                    </div>                
+                    <div id="div_controls"></div>
+                </div>
             </div>
-            <div class="col col-md-auto align-self-center justify-content-center">
-                <div id="graphs">
-                    <svg id="sharing_graph_frame" width=350 height=400>
-                        <g id="sharing_graph" width=300 height=300 transform="translate(25, 25)"></g>
-                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Fitness sharing</text>
-                    </svg>
-                    <svg id="eco_ea_graph_frame" width=350 height=400>               
-                        <g id="eco_ea_graph" width=300 height=300 transform="translate(25, 25)"></g>
-                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Eco-EA</text>
-                    </svg>
-                    <svg id="lexicase_graph_frame" width=350 height=400>
-                        <g id="lexicase_graph" width=300 height=300 transform="translate(25, 25)"></g>
-                        <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Lexicase</text>
-                    </svg>
+            <div class="col col-md-auto text-center">
+                <div class="row">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header" data-toggle="tooltip" data-placement="top" title="Use these buttons to change the contents of the population by randomly generating a new one or applying selection to the existing one">
+                                Controls
+                            </div>
+                            <p></p>
+                            <div id="div_buttons"></div>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header" data-toggle="tooltip" data-placement="left" title="What interactions do these selection schemes create in the current population? These networks visualize them. Nodes represent individuals (mouseover to see genome) and edges represent interactions (mouseover to see value).">
+                                Interaction networks
+                            </div>
+                            <div id="graphs">
+                                <svg id="sharing_graph_frame" width=350 height=400>
+                                    <g id="sharing_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                                    <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Fitness sharing</text>
+                                </svg>
+                                <svg id="eco_ea_graph_frame" width=350 height=400>               
+                                    <g id="eco_ea_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                                    <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Eco-EA</text>
+                                </svg>
+                                <svg id="lexicase_graph_frame" width=350 height=400>
+                                    <g id="lexicase_graph" width=300 height=300 transform="translate(25, 25)"></g>
+                                    <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Lexicase</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,6 +124,17 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+
+
+<!-- Set up tool-tips for things other than interaction networks-->
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+
+    })
+
+
+</script>
 
 </body>
 </html>
