@@ -68,12 +68,14 @@
 <div id="emp_base">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col col-md-auto">
+            <div class="col col-md-4">
                 <div class="card">
                     <div class="card-header" data-toggle="tooltip" data-placement="top" title="Many selection schemes have parameters that must be set ahead of time - set them here">
                         Parameters
-                    </div>                
-                    <div id="div_controls"></div>
+                    </div>
+                    <div class="p-3">                
+                        <div id="div_controls"></div>
+                    </div>
                 </div>
             </div>
             <div class="col col-md-auto text-center">
@@ -83,9 +85,9 @@
                             <div class="card-header" data-toggle="tooltip" data-placement="top" title="Use these buttons to change the contents of the population by randomly generating a new one or applying selection to the existing one">
                                 Controls
                             </div>
-                            <p></p>
-                            <div id="div_buttons"></div>
-                            <p></p>
+                            <div class="p-3">                
+                                <div id="div_buttons"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +98,7 @@
                             <div class="card-header" data-toggle="tooltip" data-placement="left" title="What interactions do these selection schemes create in the current population? These networks visualize them. Nodes represent individuals (mouseover to see genome) and edges represent interactions (mouseover to see value).">
                                 Interaction networks
                             </div>
-                            <div id="graphs">
+                            <div id="graphs" class="p-3">
                                 <svg id="sharing_graph_frame" width=350 height=400>
                                     <g id="sharing_graph" width=300 height=300 transform="translate(25, 25)"></g>
                                     <text x="175" y="370" font-family="sans-serif" font-size="30px" fill="black" text-anchor="middle">Fitness sharing</text>
@@ -131,6 +133,47 @@
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
 
+        function modifyOffset() {
+            var el, newPoint, newPlace, offset, siblings, k;
+            width    = this.offsetWidth;
+            newPoint = (this.value - this.getAttribute("min")) / (this.getAttribute("max") - this.getAttribute("min"));
+            offset   = -1;
+            if (newPoint < 0) { newPlace = 0;  }
+            else if (newPoint > 1) { newPlace = width; }
+            else { newPlace = width * newPoint + offset; offset -= newPoint;}
+            siblings = this.parentNode.childNodes;
+            for (var i = 0; i < siblings.length; i++) {
+                sibling = siblings[i];
+                if (sibling.id == this.id) { k = true; }
+                if ((k == true) && (sibling.nodeName == "OUTPUT")) {
+                    outputTag = sibling;
+                }
+            }
+            outputTag.style.left       = newPlace + "px";
+            outputTag.style.marginLeft = offset + "%";
+            outputTag.innerHTML        = this.value;
+        }
+
+        function modifyInputs() {
+            
+            var inputs = document.getElementsByTagName("input");
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].getAttribute("type") == "range") {
+                    inputs[i].onchange = modifyOffset;
+
+                    // the following taken from http://stackoverflow.com/questions/2856513/trigger-onchange-event-manually
+                    if ("fireEvent" in inputs[i]) {
+                        inputs[i].fireEvent("onchange");
+                    } else {
+                        var evt = document.createEvent("HTMLEvents");
+                        evt.initEvent("change", false, true);
+                        inputs[i].dispatchEvent(evt);
+                    }
+                }
+            }
+        }
+
+        modifyInputs();
     })
 
 

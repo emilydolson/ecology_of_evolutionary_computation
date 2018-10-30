@@ -167,7 +167,7 @@ int main() {
     }, "range", "Population size", "popsize_slider");
     pop_selector.Min(2);
     pop_selector.Max(100);
-    pop_selector.Value(10);
+    pop_selector.Value("10");
 
     auto trait_selector = UI::Input([](std::string curr){ 
         c.SetNTraits(emp::from_string<double>(curr));
@@ -175,7 +175,7 @@ int main() {
     }, "range", "Number of traits", "ntraits_slider");
     trait_selector.Min(1);
     trait_selector.Max(18);
-    trait_selector.Value(1);
+    trait_selector.Value("1");
 
     auto sigma_share_selector = UI::Input([](std::string curr){ 
         c.SetSigmaShare(emp::from_string<double>(curr));
@@ -183,7 +183,7 @@ int main() {
     }, "range", "Sharing threshold", "sigmashare_slider");
     sigma_share_selector.Min(0);
     sigma_share_selector.Max(50);
-    sigma_share_selector.Value(8);
+    sigma_share_selector.Value("8");
     sigma_share_selector.Step(.5);
 
     auto alpha_selector = UI::Input([](std::string curr){ 
@@ -192,7 +192,7 @@ int main() {
     }, "range", "Alpha", "alpha_slider");
     alpha_selector.Min(0);
     alpha_selector.Max(2);
-    alpha_selector.Value(1);
+    alpha_selector.Value("1");
     alpha_selector.Step(.1);
 
     auto cost_selector = UI::Input([](std::string curr){ 
@@ -201,7 +201,7 @@ int main() {
     }, "range", "Cost", "cost_slider");
     cost_selector.Min(0);
     cost_selector.Max(10);
-    cost_selector.Value(1);
+    cost_selector.Value("1");
     cost_selector.Step(.1);
 
     auto cf_selector = UI::Input([](std::string curr){ 
@@ -210,7 +210,7 @@ int main() {
     }, "range", "Consumption Fraction", "cf_slider");
     cf_selector.Min(0);
     cf_selector.Max(1);
-    cf_selector.Value(.0025);
+    cf_selector.Value(".0025");
     cf_selector.Step(.0001);
 
     auto niche_width_selector = UI::Input([](std::string curr){ 
@@ -219,7 +219,7 @@ int main() {
     }, "range", "Niche width", "nichewidth_slider");
     niche_width_selector.Min(0);
     niche_width_selector.Max(10);
-    niche_width_selector.Value(3);
+    niche_width_selector.Value("3");
     niche_width_selector.Step(.5);
 
     auto max_score_selector = UI::Input([](std::string curr){ 
@@ -228,7 +228,7 @@ int main() {
     }, "range", "Max score", "maxscore_slider");
     max_score_selector.Min(0);
     max_score_selector.Max(10);
-    max_score_selector.Value(3);
+    max_score_selector.Value("3");
     max_score_selector.Step(.5);
 
     auto resource_inflow_selector = UI::Input([](std::string curr){ 
@@ -237,7 +237,7 @@ int main() {
     }, "range", "Resource Inflow", "inflow_slider");
     resource_inflow_selector.Min(0);
     resource_inflow_selector.Max(100000);
-    resource_inflow_selector.Value(2000);
+    resource_inflow_selector.Value("2000");
     resource_inflow_selector.Step(100);
 
     auto resource_outflow_selector = UI::Input([](std::string curr){ 
@@ -246,7 +246,7 @@ int main() {
     }, "range", "Resource Outflow", "outflow_slider");
     resource_outflow_selector.Min(0);
     resource_outflow_selector.Max(1);
-    resource_outflow_selector.Value(.01);
+    resource_outflow_selector.Value(".01");
     resource_outflow_selector.Step(.001);
 
     auto max_bonus_selector = UI::Input([](std::string curr){ 
@@ -255,25 +255,25 @@ int main() {
     }, "range", "Max consumption", "maxbonus_slider");
     max_bonus_selector.Min(0);
     max_bonus_selector.Max(100);
-    max_bonus_selector.Value(5);
+    max_bonus_selector.Value("5");
     max_bonus_selector.Step(.5);
 
 
-    div_controls << "<br><h4 style='text-align:center'>Overarching</h4>";
+    div_controls << "<h4 style='text-align:center'>Overarching</h4>";
     div_controls << "<p style='text-align:center'>(click \"Regenerate Population\" to see changes)</p>";
-    div_controls << pop_selector << "<br>";
-    div_controls << trait_selector << "<br>";
+    div_controls << pop_selector;
+    div_controls << trait_selector;
     div_controls << "<br><h4 style='text-align:center'>Fitness sharing</h4>";
-    div_controls << sigma_share_selector << "<br>";
-    div_controls << alpha_selector << "<br>";
+    div_controls << sigma_share_selector;
+    div_controls << alpha_selector;
     div_controls << "<br><h4 style='text-align:center'>Eco-EA</h4>";
-    div_controls << cost_selector << "<br>";    
-    div_controls << cf_selector << "<br>";    
-    div_controls << niche_width_selector << "<br>";    
-    div_controls << max_score_selector << "<br>";    
-    div_controls << resource_inflow_selector << "<br>";    
-    div_controls << resource_outflow_selector << "<br>";    
-    div_controls << max_bonus_selector << "<br>";    
+    div_controls << cost_selector;    
+    div_controls << cf_selector;    
+    div_controls << niche_width_selector;    
+    div_controls << max_score_selector;    
+    div_controls << resource_inflow_selector;    
+    div_controls << resource_outflow_selector;    
+    div_controls << max_bonus_selector;    
     // div_buttons << UI::Button( [](){ c.Update(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Update", "update_button");
     div_buttons << " " << UI::Button( [](){ c.Regenerate(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Regenerate population", "redraw_button");
     div_buttons << " " << UI::Button( [](){ c.TournamentSelect(); ClearGraph(); ResetScales(); DrawGraph(c.lex_network, "#lexicase_graph");DrawGraph(c.eco_network, "#eco_ea_graph");DrawGraph(c.share_network, "#sharing_graph"); }, "Tournament Select", "tournament_button");
