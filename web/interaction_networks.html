@@ -36,7 +36,7 @@
     <h1>Interaction networks for ecological communities created by selection schemes
         <!-- Bring up FAQ button -->
         <button class="btn btn-primary btn-lg float-right" data-toggle="modal" data-target="#help" role="button" aria-expanded="false" aria-controls="help" alt="Need help? Have more questions?">
-            <span title="More information" aria-hidden="true" class="oi oi-question-mark align-middle"></span>
+            <span title="More information" aria-hidden="true" class="oi oi-question-mark align-top"></span>
         </button>	
     </h1>
         <!-- Page dsecription -->
@@ -139,6 +139,7 @@
 
     add_tooltip = function(id, title) {
         var el = document.getElementById(id);
+        console.log(el, id);
         el["title"] = title;
         el.setAttribute("data-toggle", "tooltip");
     }
