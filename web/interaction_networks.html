@@ -145,6 +145,7 @@
     }
 
     $(function () {
+        $(document).ready(function(){
         add_tooltip("popsize_slider", "Set the number of population members");
         add_tooltip("ntraits_slider", "Set the number of traits each organism (vector length)");
         add_tooltip("sigmashare_slider", "Set the cut-off for how similar individuals need to be to compete with each other");
@@ -162,7 +163,7 @@
         add_tooltip("sharing_button", "Create a new generation from the current using fitness sharing");
         add_tooltip("tournament_button", "Create a new generation from the current using tournament selection");
         add_tooltip("ecoea_button", "Create a new generation from the current using Eco-EA selection");
-
+        });
         $('[data-toggle="tooltip"]').tooltip()
     })
 
