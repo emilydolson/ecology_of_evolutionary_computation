@@ -139,32 +139,32 @@
 
     add_tooltip = function(id, title) {
         var el = document.getElementById(id);
-        console.log(el, id);
         el["title"] = title;
         el.setAttribute("data-toggle", "tooltip");
     }
 
     $(function () {
         $(document).ready(function(){
-        add_tooltip("popsize_slider", "Set the number of population members");
-        add_tooltip("ntraits_slider", "Set the number of traits each organism (vector length)");
-        add_tooltip("sigmashare_slider", "Set the cut-off for how similar individuals need to be to compete with each other");
-        add_tooltip("alpha_slider", "Set alpha, which determines the shape of the sharing function. 1 is linear decrease in competition as individuals get less similar. Less than 1 is a faster drop off. Greater than 1 is a slower drop-off");
-        add_tooltip("cost_slider", "Set the cost of attempting to use a resource");
-        add_tooltip("cf_slider", "Set the fraction of available resource that an individual is capable of using");
-        add_tooltip("nichewidth_slider", "How good does an individual need to be at a specific trait in order to use that resource (and incur the cost)? Traits in Eco-EA only matter if they are higher than this threshold");  
-        //add_tooltip("maxscore_slider", "What is the highest possible trait value?");
-        add_tooltip("inflow_slider", "Set the quantity of resource that enters the environment over the course of a generation");
-        add_tooltip("outflow_slider", "Set the proportion of resource that exits the environment naturally each generation (only matters if you're iterating the population forward with the selection buttons)");
-        add_tooltip("maxbonus_slider", "What is the largest quantity of resource that a single individual can consume on a single time step?");
+            add_tooltip("popsize_slider", "Set the number of population members");
+            add_tooltip("ntraits_slider", "Set the number of traits each organism (vector length)");
+            add_tooltip("sigmashare_slider", "Set the cut-off for how similar individuals need to be to compete with each other");
+            add_tooltip("alpha_slider", "Set alpha, which determines the shape of the sharing function. 1 is linear decrease in competition as individuals get less similar. Less than 1 is a faster drop off. Greater than 1 is a slower drop-off");
+            add_tooltip("cost_slider", "Set the cost of attempting to use a resource");
+            add_tooltip("cf_slider", "Set the fraction of available resource that an individual is capable of using");
+            add_tooltip("nichewidth_slider", "How good does an individual need to be at a specific trait in order to use that resource (and incur the cost)? Traits in Eco-EA only matter if they are higher than this threshold");  
+            //add_tooltip("maxscore_slider", "What is the highest possible trait value?");
+            add_tooltip("inflow_slider", "Set the quantity of resource that enters the environment over the course of a generation");
+            add_tooltip("outflow_slider", "Set the proportion of resource that exits the environment naturally each generation (only matters if you're iterating the population forward with the selection buttons)");
+            add_tooltip("maxbonus_slider", "What is the largest quantity of resource that a single individual can consume on a single time step?");
 
-        add_tooltip("redraw_button", "Randomly generate a new population according to current parameters");
-        add_tooltip("lexicase_button", "Create a new generation from the current using lexicase selection");
-        add_tooltip("sharing_button", "Create a new generation from the current using fitness sharing");
-        add_tooltip("tournament_button", "Create a new generation from the current using tournament selection");
-        add_tooltip("ecoea_button", "Create a new generation from the current using Eco-EA selection");
+            add_tooltip("redraw_button", "Randomly generate a new population according to current parameters");
+            add_tooltip("lexicase_button", "Create a new generation from the current using lexicase selection");
+            add_tooltip("sharing_button", "Create a new generation from the current using fitness sharing");
+            add_tooltip("tournament_button", "Create a new generation from the current using tournament selection");
+            add_tooltip("ecoea_button", "Create a new generation from the current using Eco-EA selection");
+            $('[data-toggle="tooltip"]').tooltip()
         });
-        $('[data-toggle="tooltip"]').tooltip()
+
     })
 
 
