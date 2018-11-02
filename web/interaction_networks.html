@@ -33,11 +33,16 @@
 <!-- Make header -->
 <div id="banner" class="jumbotron">
 
-    <h1>Interaction networks for ecological communities created by selection schemes </h1>
+    <h1>Interaction networks for ecological communities created by selection schemes
+        <!-- Bring up FAQ button -->
+        <button class="btn btn-primary btn-lg float-right" data-toggle="modal" data-target="#help" role="button" aria-expanded="false" aria-controls="help" alt="Need help? Have more questions?">
+            <span title="More information" aria-hidden="true" class="oi oi-question-mark align-middle"></span>
+        </button>	
+    </h1>
         <!-- Page dsecription -->
         <p>
             <br>
-            In our paper, "Ecological theory provides insights into evolutionary computation", 
+            In our paper, <a href="https://peerj.com/preprints/27315/">"Ecological theory provides insights into evolutionary computation"</a>, 
             we show that different techniques for selecting individuals to reproduce create
             radically different ecological communities. These differences can be characterized
             using interaction networks: weighted, directed graphs in which nodes represent individuals
@@ -77,12 +82,13 @@
                         <div id="div_controls"></div>
                     </div>
                 </div>
+                <br>
             </div>
             <div class="col col-md-auto text-center">
                 <div class="row">
                     <div class="col">
                         <div class="card">
-                            <div class="card-header" data-toggle="tooltip" data-placement="top" title="Use these buttons to change the contents of the population by randomly generating a new one or applying selection to the existing one">
+                            <div class="card-header" data-toggle="tooltip" title="Use these buttons to change the contents of the population by randomly generating a new one or applying selection to the existing one">
                                 Controls
                             </div>
                             <div class="p-3">                
@@ -95,7 +101,7 @@
                 <div class="row">
                     <div class="col">
                         <div class="card">
-                            <div class="card-header" data-toggle="tooltip" data-placement="left" title="What interactions do these selection schemes create in the current population? These networks visualize them. Nodes represent individuals (mouseover to see genome) and edges represent interactions (mouseover to see value).">
+                            <div class="card-header" data-toggle="tooltip" title="What interactions do these selection schemes create in the current population? These networks visualize them. Nodes represent individuals (mouseover to see genome) and edges represent interactions (mouseover to see value).">
                                 Interaction networks
                             </div>
                             <div id="graphs" class="p-3">
@@ -130,12 +136,122 @@
 
 <!-- Set up tool-tips for things other than interaction networks-->
 <script>
+
+    add_tooltip = function(id, title) {
+        var el = document.getElementById(id);
+        el["title"] = title;
+        el.setAttribute("data-toggle", "tooltip");
+    }
+
     $(function () {
+        add_tooltip("popsize_slider", "Set the number of population members");
+        add_tooltip("ntraits_slider", "Set the number of traits each organism (vector length)");
+        add_tooltip("sigmashare_slider", "Set the cut-off for how similar individuals need to be to compete with each other");
+        add_tooltip("alpha_slider", "Set alpha, which determines the shape of the sharing function. 1 is linear decrease in competition as individuals get less similar. Less than 1 is a faster drop off. Greater than 1 is a slower drop-off");
+        add_tooltip("cost_slider", "Set the cost of attempting to use a resource");
+        add_tooltip("cf_slider", "Set the fraction of available resource that an individual is capable of using");
+        add_tooltip("nichewidth_slider", "How good does an individual need to be at a specific trait in order to use that resource (and incur the cost)? Traits in Eco-EA only matter if they are higher than this threshold");  
+        //add_tooltip("maxscore_slider", "What is the highest possible trait value?");
+        add_tooltip("inflow_slider", "Set the quantity of resource that enters the environment over the course of a generation");
+        add_tooltip("outflow_slider", "Set the proportion of resource that exits the environment naturally each generation (only matters if you're iterating the population forward with the selection buttons)");
+        add_tooltip("maxbonus_slider", "What is the largest quantity of resource that a single individual can consume on a single time step?");
+
+        add_tooltip("redraw_button", "Randomly generate a new population according to current parameters");
+        add_tooltip("lexicase_button", "Create a new generation from the current using lexicase selection");
+        add_tooltip("sharing_button", "Create a new generation from the current using fitness sharing");
+        add_tooltip("tournament_button", "Create a new generation from the current using tournament selection");
+        add_tooltip("ecoea_button", "Create a new generation from the current using Eco-EA selection");
+
         $('[data-toggle="tooltip"]').tooltip()
     })
 
 
 </script>
+
+	<!-- The modal containing the FAQ (this could go anywhere) -->
+	<div class="modal fade" id="help" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2 class="modal-title" id="exampleModalLongTitle">FAQ</h2>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body m-3">
+
+					<h4> Where can I learn more about this? </h4>
+					<p> The paper associated with this site is probably a good starting point. It is currently available in 
+                    <a href="https://peerj.com/preprints/27315/">preprint form</a> and is currently under review at a journal.
+                    If you want to know more than that, <a href="http://emilyldolson.com/contact.html">contact me</a>! I love
+                     talking about this stuff.
+					</p>
+					<br>
+
+					<h4> What settings did you use in the paper? </h4>
+					<p>
+                        The settings used in the paper are the defaults on this page. I chose them somewhat arbitrarily and am 
+                        currently working on characterizing them more systematically. 
+					</p>
+					<br>
+
+					<h4> Why doesn't the paper discuss what happens when you iterate time forward? </h4>
+					<p>
+                    A few reasons. Most importantly, there are page limits and we were already trying to cram in a lot.
+                    Additionally, I'm still getting a feel for what patterns exist in the behavior of these communities 
+                    when you iterate them forward. Those buttons are mostly here so I could re-assure myself (and others)
+                    that selection doesn't do anything crazy that would have implications for how I should interpret the
+                    behavior of randomly generated communities. 
+					</p>
+					<br>
+
+					<h4> There's something wrong with this website/I have a feature request </h4>
+					<p>
+                        Great! Thanks for letting me know! You can send bugs and feature requests by 
+                        <a href="https://github.com/emilydolson/ecology_of_evolutionary_computation/issues">
+                        making an issue on GitHub</a> (or contacting me some other way, if that's easier for you).
+					</p>
+
+					<h4> I want to help with this research! </h4>
+					<p>
+                        Fantastic! <a href="http://emilyldolson.com/contact.html">Send me an e-mail</a> and we can talk
+                        about collaboration. This is a huge topic and I'm just one person, so I welcome help.
+					</p>
+
+					<h4> What tools did you use to build this? </h4>
+					<p>
+					For full details, see <a href="https://github.com/emilydolson/ecology_of_evolutionary_computation">the GitHub repo for this site</a>. In summary, though, I used:
+					<li><a href="https://github.com/devosoft/Empirical">Empirical</a>: Using the Empirical library I was able to easily create two versions of the code for this project: 
+                    a fast one for research, and this interactive one for playing with ideas and sharing with others. I wrote the whole thing in C++ and compiled the research version 
+                    normally. This interactive version was compiled to highly efficient Javascript using the <a href="https://github.com/kripken/emscripten">Emscripten compiler</a>. </li>
+					<li><a href="https://getbootstrap.com">Bootstrap</a>: an open source web framework, which I used to make this website. </li>
+					<li><a href="https://useiconic.com/open/">Open Iconic</a>: open source icons which I used for the buttons on this site. </li>
+					<br>
+					And of course my trusty laptop running <a href="https://linuxmint.com/">Linux Mint</a>.
+					</p>
+
+					<h4>Who else helped make this happen?</h4>
+					<p>
+						I'm very grateful to my collaborators, <a href="http://www.ofria.com">Charles Ofria</a> 
+                        and <a href="http://www.cse.msu.edu/~banzhafw"/>Wolfgang Banzhaf</a>, and to 
+						the MSU <a href="http://www.devolab.msu.edu">Digital Evolution Lab</a> for 
+                        their input on this project and their work on the Empirical library, without which this 
+                        site would not exist.
+					</p>
+
+					<h4>Who are you?</h4>
+					<p>
+					I'm a PhD student at Michigan State University studying evolution, ecology, and computer science. To learn more about my research, see <a href="http://www.emilyldolson.com"> my website</a>.
+					</p>
+	
+				</div>
+				<div class="modal-footer">
+					<a href="https://twitter.com/emilyldolson" class="twitter-follow-button" data-show-count="false">Follow me on Twitter!</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script> </li>
+					<a class="github-button" href="https://github.com/emilydolson" data-style="mega" aria-label="My Github">My Github</a> </li>
+				</div>
+			</div>
+		</div>
+    </div>
 
 </body>
 </html>

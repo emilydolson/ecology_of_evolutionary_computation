@@ -1,6 +1,7 @@
 /* Black tooltips would blend into the jumbotron */
-.tooltip-arrow,
-.tooltip > .tooltip-inner {background-color: #007bff;}
+/* .tooltip-arrow,
+.tooltip > .tooltip-inner {background-color: #007bff;} */
+
 
 /* So the header doesn't spill over on mobile */
 h1 {
@@ -82,10 +83,6 @@ button span {
   margin: -1px 0 0 0;
   top: 100%;
   left: 0;
-}
-
-.tooltip > .tooltip-inner {
-    background-color: rgba(0, 0, 0, 0.9);
 }
 
 .card-header {
